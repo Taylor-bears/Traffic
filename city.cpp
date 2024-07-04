@@ -17,8 +17,8 @@ city::city(const string& file_path) {
 
         while (input >> nosense) {
             if (nosense == '(') {
-                getline(input, city_name1, ',');//读取 北京
-                getline(input, city_name2, ')');//读取 武汉 
+                getline(input, city_name1, ',');//读取 北京               
+                getline(input, city_name2, ')');//读取 武汉                 
 
                 //读取两座城市的信息
                 int i;
@@ -35,7 +35,7 @@ city::city(const string& file_path) {
                     if (city_name2 == name[j])
                         break;
                 }
-                if (j == name.size() ) {
+                if (j == name.size()) {
                     name.push_back(city_name2);//如果name中没有city_name2，则存入vector中
                 }
 
@@ -43,7 +43,7 @@ city::city(const string& file_path) {
                 string distance;
                 int distance_num;
                 getline(input, distance, 'k');//100km只读到k
-                input >> nosense >> nosense; //将k和m读入，下次就读入(
+                input >> nosense ; //将m读入，下次就读入(
                 distance_num = stoi(distance);
 
                 //将城市与城市组合，并与距离构成哈希表
