@@ -31,7 +31,7 @@ struct pair_equal {
 };
 
 class city {
-public:
+private:
 	vector<string> name; //一维向量存储城市的名称
     //因为无序表中的部分对象类型没有pair类型，所以要重新定义哈希函数和相等比较函数
     unordered_map<pair<string, string>, int, pair_hash, pair_equal> distance_map;//不同城市之间距离的哈希函数
