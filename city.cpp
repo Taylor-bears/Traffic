@@ -26,16 +26,16 @@ city::city(const string& file_path) {
                     if (city_name1 == name[i])
                         break;
                 }
-                if (i == name.size() - 1) {
+                if (i == name.size()) {
                     name.push_back(city_name1);//如果name中没有city_name1，则存入vector中
                 }
                 
-                int i;
-                for (i = 0; i < name.size(); i++) {
-                    if (city_name2 == name[i])
+                int j;
+                for (j = 0; j < name.size(); j++) {
+                    if (city_name2 == name[j])
                         break;
                 }
-                if (i == name.size() - 1) {
+                if (j == name.size() ) {
                     name.push_back(city_name2);//如果name中没有city_name2，则存入vector中
                 }
 
@@ -47,10 +47,8 @@ city::city(const string& file_path) {
                 distance_num = stoi(distance);
 
                 //将城市与城市组合，并与距离构成哈希表
-                pair<string, string> distances = make_pair(city_name1, city_name2);//以两个城市作为一组
-                unordered_map<pair<string, string>, int> distance_map;
-                distance_map[distances] = distance_num; //不同城市
-
+                pair<string, string> distances = make_pair(city_name1, city_name2);//以两个城市作为一组               
+                this->distance_map[distances] = distance_num; //不同城市之间的距离已形成哈希表
 
             }
             else
