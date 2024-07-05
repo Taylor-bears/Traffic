@@ -4,22 +4,19 @@
 #include<fstream>
 #include<string>
 
-time::time() {
-	month = 0;
+time::time() {	
 	day = 0;
 	hour = 0;
 	minute = 0;
 }
 
-time::time(int x1, int x2, int x3, int x4) {
-	month = x1;
+time::time(int x2, int x3, int x4) {
 	day = x2;
 	hour = x3;
 	minute = x4;
 }
 
-void time::set(int x1, int x2, int x3, int x4) {
-	month = x1;
+void time::set(int x2, int x3, int x4) {
 	day = x2;
 	hour = x3;
 	minute = x4;

@@ -37,6 +37,8 @@ public://测试用public
     unordered_map<pair<string, string>, int, pair_hash, pair_equal> distance_map;//不同城市之间距离的哈希函数
 
 	city(const string& file_path); //以文件作为输入参数（即需要用到city.txt）
+    city();
+    //还需要添加、修改、删除函数
 };
 
 

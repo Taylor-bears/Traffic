@@ -3,15 +3,14 @@
 #define _TIME_H
 
 class time {
-private:
-	int month;
+private:	
 	int day;
 	int hour;
 	int minute;
 public:
 	time();//Ä¬ÈÏ¹¹Ôì	
-	time(int,int,int,int);
-	void set(int, int, int, int);
+	time(int,int,int);
+	void set(int, int, int);
 };
 
 #endif

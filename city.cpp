@@ -17,8 +17,8 @@ city::city(const string& file_path) {
 
         while (input >> nosense) {
             if (nosense == '(') {
-                getline(input, city_name1, ',');//读取 北京               
-                getline(input, city_name2, ')');//读取 武汉                 
+                getline(input, city_name1, ',');//读取 Beijing               
+                getline(input, city_name2, ')');//读取 Wuhan                 
 
                 //读取两座城市的信息
                 int i;
@@ -54,12 +54,17 @@ city::city(const string& file_path) {
             else
                 break;
         }
+        //cout<< this->distance_map.find(make_pair("Beijing", "Shanghai"))->second;
         // this->distance_map.find(make_pair("BeiJing", "ShangHai"))->second; 如果要查找两城市间距离，就用这个方法
         input.close(); //关闭文件
     }
     else {
         std::cerr << "Unable to open file" << std::endl; //无法打开则报错
     }
-
-
 }
+
+//无参数时构造函数
+city::city() {
+    //无
+}
+

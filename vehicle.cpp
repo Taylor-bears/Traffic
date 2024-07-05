@@ -9,7 +9,7 @@ using namespace std;
 vehicle::vehicle() {
 	type = "";
 	name = "";
-	time; //默认构造
+	time1; //默认构造
 	consume;
 	time2;
 	money = 0;
