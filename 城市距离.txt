@@ -1,4 +1,4 @@
-(BeiJing,ShangHai) 125km
+(BeiJing,ShangHai) 1250km
 (TianJin,ChongQing) 1954km
 (ZhengZhou,ShangHai) 943km
 (WuHan,BeiJing) 1171km
