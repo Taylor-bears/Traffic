@@ -2,25 +2,34 @@
 #include "graph.h"
 #include <iostream>
 #include<string>
+#include<cmath>
 #include<fstream>
 
 using namespace std;
 
-//´ø²Î¹¹Ôìº¯Êı
-//ÔÚÖ÷º¯ÊıÖĞ£¬ĞèÒªÊ¹ÓÃ"city.txt"ºÍ""³õÊ¼»¯
+double  time_transfer(int hour, int minute)
+{
+	double a;
+	a = hour + minute / 60.0;
+	a = static_cast<int>(a * 10 + 0.5);
+	return a / 10.0;
+}//æ—¶é—´è½¬æ¢å‡½æ•°çš„å®šä¹‰
+
+//å¸¦å‚æ„é€ å‡½æ•°
+//åœ¨ä¸»å‡½æ•°ä¸­ï¼Œéœ€è¦ä½¿ç”¨"city.txt"å’Œ""åˆå§‹åŒ–
 graph::graph(const string& file_path1, const string& file_path2) { 
-	mycity = city(file_path1);//ÕâÀïĞèÒª¸³Öµ
+	mycity = city(file_path1);//è¿™é‡Œéœ€è¦èµ‹å€¼
 	number = mycity.name.size();
-	edges.resize(number, vector<vector<vehicle>>(number));//´ËÊ±½¨Á¢µÄÈıÎ¬Êı×é£¬Ç°Á½Î¬µÄ³¤¶ÈÒÑÓÉ³ÇÊĞÊıÁ¿È·¶¨
+	edges.resize(number, vector<vector<vehicle>>(number));//æ­¤æ—¶å»ºç«‹çš„ä¸‰ç»´æ•°ç»„ï¼Œå‰ä¸¤ç»´çš„é•¿åº¦å·²ç”±åŸå¸‚æ•°é‡ç¡®å®š
 	
-	//ÏÂÃæÈÃÃ¿Ò»¸ö³ÇÊĞ¶ÔÓ¦Ò»¸ö±àºÅ£¬±ãÓÚºóÃæ¾ØÕóÖĞÃ¿¸öÊı×Ö
+	//ä¸‹é¢è®©æ¯ä¸€ä¸ªåŸå¸‚å¯¹åº”ä¸€ä¸ªç¼–å·ï¼Œä¾¿äºåé¢çŸ©é˜µä¸­æ¯ä¸ªæ•°å­—
 	for (int i = 0; i < number; i++) {
 		this->traffic_map[mycity.name[i]] = i;
 	}
 
-	//ÏÂÃæ½¨Á¢Í¼£¨ĞèÒª¶ÁÈ¡½»Í¨¹¤¾ßÎÄ¼ş£©£¬Ò²ÊÇ±¾³ÌĞò×îÖØÒªµÄ´¢´æ²¿·Ö
+	//ä¸‹é¢å»ºç«‹å›¾ï¼ˆéœ€è¦è¯»å–äº¤é€šå·¥å…·æ–‡ä»¶ï¼‰ï¼Œä¹Ÿæ˜¯æœ¬ç¨‹åºæœ€é‡è¦çš„å‚¨å­˜éƒ¨åˆ†
 	ifstream input("vehicle.txt");
-	char nosense;//ÓÃÓÚ±£´æÎŞÓÃµÄ·ûºÅ
+	char nosense;//ç”¨äºä¿å­˜æ— ç”¨çš„ç¬¦å·
 	string city_name1;
 	string city_name2;
 	string type;
@@ -36,10 +45,10 @@ graph::graph(const string& file_path1, const string& file_path2) {
 	int money;
 	
 
-	while (input >> nosense) { //¶ÁÈ¡£¨
+	while (input >> nosense) { //è¯»å–ï¼ˆ
 		if (nosense == '(') {
-			getline(input, city_name1, ',');//¶ÁÈ¡ Beijing               
-			getline(input, city_name2, ')');//¶ÁÈ¡ Wuhan    
+			getline(input, city_name1, ',');//è¯»å– Beijing               
+			getline(input, city_name2, ')');//è¯»å– Wuhan    
 			int num1 = traffic_map[city_name1];
 			int num2 = traffic_map[city_name2];
 
@@ -49,7 +58,7 @@ graph::graph(const string& file_path1, const string& file_path2) {
 	}
 }
 
-//Ä¬ÈÏ¹¹Ôìº¯Êı
+//é»˜è®¤æ„é€ å‡½æ•°
 graph::graph() {
-	//ÎŞ
+	//æ— 
 }
