@@ -11,6 +11,7 @@ using namespace std;
 //train的本质是图中边的信息，其中比较的时候比较consume和money
 class train :public time{ //train对time继承 
 private: 
+	string type = "train";
 	string name;
 	time time1;
 	time consume;

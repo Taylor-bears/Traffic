@@ -54,11 +54,11 @@ city::city(const string& file_path) {
             else
                 break;
         }
-
-        input.close();
+        // this->distance_map.find(make_pair("BeiJing", "ShangHai"))->second; 如果要查找两城市间距离，就用这个方法
+        input.close(); //关闭文件
     }
     else {
-        std::cerr << "Unable to open file" << std::endl;
+        std::cerr << "Unable to open file" << std::endl; //无法打开则报错
     }
 
 

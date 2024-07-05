@@ -11,6 +11,7 @@ using namespace std;
 //fly的本质也是图中边的信息，其中比较的时候比较consume和money
 class fly :public time { //train对time继承 
 private:
+	string type = "fly";
 	string name;
 	time time1;
 	time consume;
