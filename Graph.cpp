@@ -2,63 +2,101 @@
 #include "graph.h"
 #include <iostream>
 #include<string>
-#include<cmath>
 #include<fstream>
+#include<vector>
 
 using namespace std;
 
-double  time_transfer(int hour, int minute)
+//´ø²Î¹¹Ôìº¯Êı
+//ÔÚÖ÷º¯ÊıÖĞ£¬ĞèÒªÊ¹ÓÃ"city.txt"ºÍ""³õÊ¼»¯
+graph::graph(const string& file_path1, const string& file_path2) { 
+	mycity = city(file_path1);//ÕâÀïĞèÒª¸³Öµ
+	number = mycity.name.size();
+	edges.resize(number, vector<vector<vehicle>>(number));//´ËÊ±½¨Á¢µÄÈıÎ¬Êı×é£¬Ç°Á½Î¬µÄ³¤¶ÈÒÑÓÉ³ÇÊĞÊıÁ¿È·¶¨
+	
+	//ÏÂÃæÈÃÃ¿Ò»¸ö³ÇÊĞ¶ÔÓ¦Ò»¸ö±àºÅ£¬±ãÓÚºóÃæ¾ØÕóÖĞÃ¿¸öÊı×Ö
+	for (int i = 0; i < number; i++) {
+		this->traffic_map[mycity.name[i]] = i;
+	}
+
+	//ÏÂÃæ½¨Á¢Í¼£¨ĞèÒª¶ÁÈ¡½»Í¨¹¤¾ßÎÄ¼ş£©£¬Ò²ÊÇ±¾³ÌĞò×îÖØÒªµÄ´¢´æ²¿·Ö
+	ifstream input("vehicle.txt");
+	char nosense;//ÓÃÓÚ±£´æÎŞÓÃµÄ·ûºÅ
+	string city_name1;
+	string city_name2;
+	//ÏÂÃæÊÇvehicleµÄÎå¸öÊı¾İ
+	string type;
+	string identifier;	
+	times mytime1;
+	double consume;
+	times mytime2;
+	int money;
+
+	while (input >> nosense) { //¶ÁÈ¡£¨
+		string day1;
+		string hour1;
+		string minute1;
+		string hour_past;
+		string minute_past;
+		string day2;
+		string hour2;
+		string minute2;
+		string cost;
+		if (nosense == '(') {
+			getline(input, city_name1, ',');//¶ÁÈ¡ Beijing               
+			getline(input, city_name2, ')');//¶ÁÈ¡ Wuhan    
+			int num1 = traffic_map[city_name1];
+			int num2 = traffic_map[city_name2];
+			input >> nosense;//¶ÁÈ¡","
+			getline(input, type, ',');//1×÷ÎªÀàĞÍ´æ´¢
+			getline(input, identifier, ',');//2×÷Îª±àºÅ´æ´¢
+			getline(input, day1, '.');
+			getline(input, hour1, ':');
+			getline(input, minute1, ',');
+			mytime1 = times(stoi(day1), stoi(hour1), stoi(minute1));//3×÷ÎªÊ±¼ä1´æ´¢
+			getline(input, hour_past, ':');
+			getline(input, minute_past, ',');
+			consume = time_transfer(stoi(hour_past),stoi(minute_past));//4×÷ÎªºÄÊ±ĞèÒª±£´æ
+			getline(input, day2, '.');
+			getline(input, hour2, ':');
+			getline(input, minute2, ',');
+			mytime2 = times(stoi(day2), stoi(hour2), stoi(minute2));//5×÷ÎªÊ±¼ä1´æ´¢
+			getline(input, cost);
+			money = stoi(cost);//6×÷Îª·ÑÓÃ´æ´¢
+			vehicle myvehicle(type, identifier, mytime1, consume, mytime2, money);//ÒÑ¾­¶ÁÈ¡ºÃÁËÒ»¸ö¹¤¾ßÀà
+			//½«¹¤¾ß¶ÁÈë±ßµÄÏòÁ¿ÖĞ£¬¼´ÁÚ½Ó¾ØÕóµÄµãÉÏ
+			edges[num1][num2].push_back(myvehicle);//num1ºÍnum2ÊÇÁ½¸ö³ÇÊĞµÄ±àºÅ£¨×¢ÒâÕâÀïÊÇÓĞÏòÍ¼£¬²¢²»¶Ô³Æ£©
+		}
+	}
+	//Í¨¹ıÒÔÉÏ²Ù×÷Ö»ÊÇ½¨Á¢ÁËÓĞÁ¬Í¨´¦Á½µØµÄÁ¬½Ó£¬
+	//Í¼ÖĞ»¹Òª°üº¬0ºÍ¡ŞÁ½ÖÖÌØÊâÇé¿ö
+	for (int i = 0; i < number; i++) {
+		for (int j = 0; j < number; j++) {
+			if (edges[i][j].empty()) {//Èç¹ûÎª¿Õ£¬Ôò
+				if (i == j)
+					edges[i][j].push_back(vehicle());
+				//´ËÊ±µ÷ÓÃÄ¬ÈÏ¹¹Ôìº¯Êı£¬Ã¿¸öÖµ¶¼Îª0£¬Í¨¹ıÊ¶±ğ""¿Õ´®(type)¼´¿ÉÖªµÀ
+				else {
+					times timetmp1;//µ÷ÓÃÄ¬ÈÏ¹¹Ôì£¬ÄÚ²¿³ÉÔ±¶¼Îª0
+					times timetmp2;
+					edges[i][j].push_back(vehicle("MAX", "MAX", timetmp1, 11.1111, timetmp2, -1));
+					//´ËÊ±½¨Á¢µÄÊÇÎŞÇî´ó±ßÖµ£¬Í¨¹ıÊ¶±ğ"MAX"(type)¼´¿ÉÖªµÀ
+				}					
+			}
+		}
+	}
+}
+
+//Ä¬ÈÏ¹¹Ôìº¯Êı
+graph::graph() {
+	//ÎŞ
+}
+
+//Ê±¼ä×ª»»º¯ÊıµÄ¶¨Òå
+double graph::time_transfer(int hour, int minute)
 {
 	double a;
 	a = hour + minute / 60.0;
 	a = static_cast<int>(a * 10 + 0.5);
 	return a / 10.0;
-}//æ—¶é—´è½¬æ¢å‡½æ•°çš„å®šä¹‰
-
-//å¸¦å‚æ„é€ å‡½æ•°
-//åœ¨ä¸»å‡½æ•°ä¸­ï¼Œéœ€è¦ä½¿ç”¨"city.txt"å’Œ""åˆå§‹åŒ–
-graph::graph(const string& file_path1, const string& file_path2) { 
-	mycity = city(file_path1);//è¿™é‡Œéœ€è¦èµ‹å€¼
-	number = mycity.name.size();
-	edges.resize(number, vector<vector<vehicle>>(number));//æ­¤æ—¶å»ºç«‹çš„ä¸‰ç»´æ•°ç»„ï¼Œå‰ä¸¤ç»´çš„é•¿åº¦å·²ç”±åŸå¸‚æ•°é‡ç¡®å®š
-	
-	//ä¸‹é¢è®©æ¯ä¸€ä¸ªåŸå¸‚å¯¹åº”ä¸€ä¸ªç¼–å·ï¼Œä¾¿äºåé¢çŸ©é˜µä¸­æ¯ä¸ªæ•°å­—
-	for (int i = 0; i < number; i++) {
-		this->traffic_map[mycity.name[i]] = i;
-	}
-
-	//ä¸‹é¢å»ºç«‹å›¾ï¼ˆéœ€è¦è¯»å–äº¤é€šå·¥å…·æ–‡ä»¶ï¼‰ï¼Œä¹Ÿæ˜¯æœ¬ç¨‹åºæœ€é‡è¦çš„å‚¨å­˜éƒ¨åˆ†
-	ifstream input("vehicle.txt");
-	char nosense;//ç”¨äºä¿å­˜æ— ç”¨çš„ç¬¦å·
-	string city_name1;
-	string city_name2;
-	string type;
-	string identifier;
-	int day1;
-	int hour1;
-	int minute1;
-	int hour_past;
-	int minute_past;
-	int day2;
-	int hour2;
-	int minute2;
-	int money;
-	
-
-	while (input >> nosense) { //è¯»å–ï¼ˆ
-		if (nosense == '(') {
-			getline(input, city_name1, ',');//è¯»å– Beijing               
-			getline(input, city_name2, ')');//è¯»å– Wuhan    
-			int num1 = traffic_map[city_name1];
-			int num2 = traffic_map[city_name2];
-
-
-			edges[num1, num2];
-		}
-	}
-}
-
-//é»˜è®¤æ„é€ å‡½æ•°
-graph::graph() {
-	//æ— 
 }
