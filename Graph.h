@@ -12,7 +12,7 @@
 #include"time.h"
 
 using namespace std;
-double  time_transfer(int hour, int minute);
+double  time_transfer(int hour, int minute);//时间转换函数的申明
 //邻接矩阵构想：他的每个点反映的是边的权值，而每个点比如(1,2)这里的1就对应的是城市名字，而这个点在
 //矩阵中的值其实就是边的权值（交通方式），由于两城市间存在多个交通方式，一个点的值就会对应多个交通方式，
 //故矩阵中的每个点都是一个vector，而vectoe中每个元素就是一个类（train或者fly）
