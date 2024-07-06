@@ -129,6 +129,28 @@ vehicle graph::getmin(vector<vehicle> ve) {
 	return ve[minnum];//返回最小交通方式
 }
 
+bool graph::timecheck(times, times，int wait_hours)
+{// 首先将等待时间加到time1上
+	time1.hour += wait_hours;
+	time1.day += time1.hour / 24; // 超过24小时则增加一天
+	time1.hour %= 24; // 调整小时数
+
+	if (time1.day < time2.day) {
+		return true;
+	}
+	else if (time1.day == time2.day) {
+		if (time1.hour < time2.hour) {
+			return true;
+		}
+		else if (time1.hour == time2.hour) {
+			return time1.minute <= time2.minute;
+		}
+	}
+	return false;
+	
+	
+}
+
 //通过此算法可得到最小时间路径（中转条件）
 void graph::Time_Dijkstra(int v) {
 	vector<double> dist(number);//表示距离
