@@ -10,12 +10,12 @@ vehicle::vehicle() {
 	type = "";
 	name = "";
 	time1; //Ä¬ÈÏ¹¹Ôì
-	consume=0;
+	consume=0.0;
 	time2;
-	money = 0;
+	money = 0.0;
 }
 
-vehicle::vehicle(string x1, string x2, times t3, double t4, times t5, int x6) {
+vehicle::vehicle(string x1, string x2, times t3, double t4, times t5, double x6) {
 	type = x1;
 	name = x2;
 	time1 = t3;
@@ -24,7 +24,7 @@ vehicle::vehicle(string x1, string x2, times t3, double t4, times t5, int x6) {
 	money = x6;
 }
 
-void vehicle::set(string x1, string x2, times t3, double t4, times t5, int x6) {
+void vehicle::set(string x1, string x2, times t3, double t4, times t5, double x6) {
 	type = x1;
 	name = x2;
 	time1 = t3;

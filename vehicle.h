@@ -18,16 +18,16 @@ public:
 	times time1;
 	double consume;//到时候需要调用时间转换函数，耗时大致形式是1.35这样
 	times time2;
-	int money;
+	double money;
 
 public:
 	//若调用默认构造函数，此时建立的工具类当于邻接矩阵中的0，即自身与自身没有距离
 	vehicle();//默认构造	
-	vehicle(string x1, string x2, times t3, double t4, times t5, int x6);//在构造的时候要注意到时候读取数据要先构造3个time类
+	vehicle(string x1, string x2, times t3, double t4, times t5, double x6);//在构造的时候要注意到时候读取数据要先构造3个time类
 	//注意，若调用默认形参的构造方式，但有默认构造时，调用默认形参会有问题，直接输入
 	// "MAX","MAX",times timetmp1,INF,times timetmp2,INF，识别第一个type即可知道是否是无限大值
 	// 此时建立的工具类相当于邻接矩阵中的无限大这一概念，即不连接
-	void set(string, string, times, double, times, int);
+	void set(string, string, times, double, times, double);
 	
 };
 

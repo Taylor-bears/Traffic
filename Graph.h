@@ -25,11 +25,12 @@ public:
 
 	graph(const string& file_path1, const string& file_path2);
 	graph();//默认构造
-	double time_transfer(int hour, int minute);//时间转换函数的声明
+	double time_transfer(int hour, int minute);//时间转换函数的申明
 	void optimal();//得到最优方案
-	void Time_Dijkstra(int v);
-	vehicle getmin(vector<vehicle>);
-	bool timecheck(times, times，int wait_hours);//将第一个时间与第二个时间比对，若比他大则返回true
+	void Time_Dijkstra(int v,int n, times);//第二个time是指定时间
+	vehicle getmin(vector<vehicle>, times, string, string);//第二个time是指定时间
+	bool timecheck(times , times , int );//将第一个时间与第二个时间比对，若比他大则返回true
+	void dispaly(vector<double> , vector<int> , vector<bool> , int , int , vector<times> , vector<string> );//显示某点到某点的最短路径
 };
 
 

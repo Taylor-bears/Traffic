@@ -31,7 +31,7 @@ graph::graph(const string& file_path1, const string& file_path2) {
 	times mytime1;
 	double consume;
 	times mytime2;
-	int money;
+	double money;
 
 	while (input >> nosense) { //读取（
 		string day1;
@@ -63,7 +63,7 @@ graph::graph(const string& file_path1, const string& file_path2) {
 			getline(input, minute2, ',');
 			mytime2 = times(stoi(day2), stoi(hour2), stoi(minute2));//5作为时间1存储
 			getline(input, cost);
-			money = stoi(cost);//6作为费用存储
+			money = stod(cost);//6作为费用存储
 			vehicle myvehicle(type, identifier, mytime1, consume, mytime2, money);//已经读取好了一个工具类
 			//将工具读入边的向量中，即邻接矩阵的点上
 			edges[num1][num2].push_back(myvehicle);//num1和num2是两个城市的编号（注意这里是有向图，并不对称）
@@ -103,34 +103,9 @@ graph::graph() {
 }
 
 //所有的方案可行的前提都是他的时间要比给定的晚，而不能早
-bool graph::timecheck(times time1, times time2) {
-	
-}
-
-//时间转换函数的定义
-double graph::time_transfer(int hour, int minute)
-{
-	double a;
-	a = hour + minute / 60.0;
-	a = static_cast<int>(a * 10 + 0.5);
-	return a / 10.0;
-}
-
-//可以得到邻接矩阵某点向量时间的最小值对应的交通方式
-vehicle graph::getmin(vector<vehicle> ve) {
-	double min = ve.front().consume;//最小费用
-	int minnum = 0;//最小编号
-	for (int i = 1; i < ve.size(); i++) {
-		if (ve[i].consume < min) {
-			minnum = i;
-			min = ve[i].consume;
-		}
-	}
-	return ve[minnum];//返回最小交通方式
-}
-
-bool graph::timecheck(times, times，int wait_hours)
-{// 首先将等待时间加到time1上
+// 比较time1加上等待时间是否小于等于time2，这里加上比较时长，是为了便于后面处理中转站需要等待的情况
+bool graph::timecheck(times time1, times time2, int wait_hours) {
+	// 首先将等待时间加到time1上
 	time1.hour += wait_hours;
 	time1.day += time1.hour / 24; // 超过24小时则增加一天
 	time1.hour %= 24; // 调整小时数
@@ -147,39 +122,169 @@ bool graph::timecheck(times, times，int wait_hours)
 		}
 	}
 	return false;
-	
-	
 }
 
-//通过此算法可得到最小时间路径（中转条件）
-void graph::Time_Dijkstra(int v) {
-	vector<double> dist(number);//表示距离
-	vector<int> path(number);//表示路径上的点，可通过哈希表得到城市名
-	vector<int> S(number);
+//时间转换函数的定义
+double graph::time_transfer(int hour, int minute)
+{
+	double a;
+	a = hour + minute / 60.0;
+	a = static_cast<int>(a * 10 + 0.5);
+	return a / 10.0;
+}
+
+//可以得到邻接矩阵某点向量时间的最小值对应的交通方式
+//同样的算某两地之间的最小方式，是需要考虑上一次的交通方式，因为中转的等待时间有要求且不同
+vehicle graph::getmin(vector<vehicle> ve, times current_time, string last_vehicle_type, string last_vehicle_name) {//最近一次的交通工具
+	double min = INF; // 最小费用初始化为无穷大
+	int minnum = -1; // 最小编号
+	int wait_hours; 
+	
+	// 火车等待1小时，飞机等待2小时，其他情况不等待（如果是起始地，则没有上一工具，故等待时长为0）
+
+	for (int i = 0; i < ve.size(); i++) {
+		if (ve[i].name != last_vehicle_name && i > 0) { //第一次列车没有上一车次说法
+			wait_hours = (last_vehicle_type == "train") ? 1 : (last_vehicle_type == "fly" ? 2 : 0);
+		}
+		else
+			wait_hours = 0;//i=0时等待时长也为0
+		if (timecheck(current_time, ve[i].time1, wait_hours) && ve[i].consume < min) { 
+			// 如果该方式的出发时间满足条件并且耗时更小
+			minnum = i;
+			min = ve[i].consume;
+		}
+	}
+
+	if (min == INF) { // 如果所有的时间都不符合，则返回无限大交通类
+		times timetmp1, timetmp2;
+		return vehicle("MAX", "MAX", timetmp1, INF, timetmp2, INF);
+	}
+	return ve[minnum]; // 返回最小交通方式
+}
+
+//通过此算法可得到最小时间路径（游客接受中转）
+void graph::Time_Dijkstra(int v, int n, times current_time) {
+	vector<double> dist(number, INF); // 初始化所有距离为无穷大
+	vector<int> path(number, -1); // 初始化路径
+	vector<bool> S(number, false); // 标记数组，false表示未被访问
+	//下面是原Dijkstra所不具备的，主要是为了记录到该地后上次的信息
+	vector<times> arrival_time(number); // 记录到每个顶点的到达时间
+	vector<string> last_vehicle_type(number); // 记录到每个顶点最后乘坐的交通工具类型
+	vector<string> last_vehicle_name(number);
+
+	// 初始化从v出发到各点的距离和到达时间
 	for (int i = 0; i < number; i++) {
-		//时间也要满足情况
-		dist[i] = getmin(edges[v][i]).consume;
+		if (i != v && edges[v][i].front().type!="") {
+			vehicle minVehicle = getmin(edges[v][i], current_time, "", "");
+			dist[i] = minVehicle.consume;
+			S[i] = false;
+			if (minVehicle.type != "MAX"&& minVehicle.type != "") {
+				path[i] = v;
+				arrival_time[i] = minVehicle.time2;
+				last_vehicle_type[i] = minVehicle.type;
+				last_vehicle_name[i] = minVehicle.name;
+			}
+			else {
+				path[i] = -1;
+			}
+		}
+	}
+
+	dist[v] = 0; // 自己到自己的距离为0
+	S[v] = true; // 标记为已访问
+	arrival_time[v] = current_time; // 出发点的到达时间就是当前时间
+	double mindis;
+	int u = -1;
+
+	for (int i = 0; i < number - 1; i++) {
+		mindis = INF;	
+		for (int j = 0; j < number; j++) {
+			if (S[j] == 0 && dist[j] < mindis) {
+				u = j;
+				mindis = dist[j];
+			}
+		}		
+		S[u] = true;
+
+		for (int j = 0; j < number; j++) {
+			if (S[j] == 0 && !edges[u][j].empty()) {
+				vehicle minVehicle = getmin(edges[u][j], arrival_time[u], last_vehicle_type[u], last_vehicle_name[u]);
+				// Time_Dijkstra函数内部，当找到更短的路径时的代码段
+				if (minVehicle.type != "MAX" && minVehicle.consume + dist[u] < dist[j]) {
+					dist[j] = minVehicle.consume + dist[u];
+					path[j] = u;
+					arrival_time[j] = minVehicle.time2; // 确保这里的time2已经是考虑了等待时间后的到达时间
+					last_vehicle_type[j] = minVehicle.type;
+					last_vehicle_name[j] = minVehicle.name;
+				}
+			}
+		}
+	}
+
+	dispaly(dist, path, S, v, n, arrival_time, last_vehicle_type);
+}
+
+
+void graph::dispaly(vector<double> dist, vector<int> path, vector<bool> S, int v, int n, vector<times> arrival_time, vector<string> last_vehicle_type) {
+	if (S[n]) { // 如果从v到n存在路径
+		cout << "从出发地到目的地的最快方式如下：" << endl;
+		vector<int> apath;
+		int current = n;
+		//回顾狄克斯特拉算法寻找路径的过程，他是通过n点找到他的前一个点，再找他前面的，直到找到出发点
+		while (current != v) { 
+			apath.push_back(current);
+			current = path[current];
+		}
+		apath.push_back(v); // 添加起始点
+
+		//因为apath里面是倒着找的，那么倒着输出就是从原点处输出
+		// 反向遍历apath，输出路径
+		for (int i = apath.size() - 1; i > 0; i--) {
+			int from = apath[i], to = apath[i - 1];
+			// 假设每个城市间只有一条最快路径，因此我们只取第一条
+			vehicle& v = edges[from][to][0];
+			cout << "从" << mycity.name[from] << "出发,到" << mycity.name[to] << ",类型："
+				<< v.type << ",编号：" << v.name << ",在"
+				<< v.time1.day << "号" << v.time1.hour << "时" << v.time1.minute << "分出发，耗时"
+				<< v.consume << "小时，预估" << v.time2.day << "号" << v.time2.hour << "时" << v.time2.minute << "分到达，费用："
+				<< v.money << "元" << endl;
+		}
+
+		// 最后显示到达目的地的时间
+		cout << "预计到达时间：" << arrival_time[n].day << "号 "
+			<< arrival_time[n].hour << "时 " << arrival_time[n].minute << "分" << endl;
+	}
+	else {
+		cout << "没有找到从出发地到目的地的路径。" << endl;
 	}
 }
+
 
 //最优方案定义
 void graph::optimal() {
-	string city_name1;
-	string city_name2;
-	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）" << endl;
-	cout << "请输入出发地" << endl;
+	string city_name1, city_name2;
+	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
+	cout << "请输入出发地：" << endl;
 	cin >> city_name1;
-	cout << "请输入目的地" << endl;
+	cout << "请输入目的地：" << endl;
 	cin >> city_name2;
-	//需要显示两座城市间的距离嘛（后续思考）
-	int flag;
-	cout << "您是否接受中转，是则输入1，否则输入2" << endl;
-	cin >> flag;
-	if (flag == 1) {
-		
 
+	if (traffic_map.find(city_name1) == traffic_map.end() || traffic_map.find(city_name2) == traffic_map.end()) {
+		cout << "输入的城市不存在，请重新输入。" << endl;
+		return;
 	}
-	else {
 
-	}
+	int start = traffic_map[city_name1];
+	int destination = traffic_map[city_name2];
+
+	// 让用户输入出发时间（只包括日、时、分）
+	int day, hour, minute;
+	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6日15点30分）：" << endl;
+	cin >> day >> hour >> minute;
+
+	// 创建一个times对象来表示用户输入的出发时间
+	times currentTime(day, hour, minute);
+
+	// 调用Time_Dijkstra函数计算最优路径
+	Time_Dijkstra(start, destination, currentTime); // 假设这个函数接受times对象作为参数
 }
