@@ -54,7 +54,12 @@ city::city(const string& file_path) {
             else
                 break;
         }
-        //cout<< this->distance_map.find(make_pair("Beijing", "Shanghai"))->second;
+        /*测试用例：cout << this->distance_map.find(make_pair("Beijing", "Shanghai"))->second;
+        测试用例：cout << name.size() << endl;
+        for (auto i : name) {
+            cout << i << endl;
+        }*/
+
         // this->distance_map.find(make_pair("BeiJing", "ShangHai"))->second; 如果要查找两城市间距离，就用这个方法
         input.close(); //关闭文件
     }

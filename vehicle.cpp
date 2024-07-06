@@ -10,7 +10,7 @@ vehicle::vehicle() {
 	type = "";
 	name = "";
 	time1; //Ä¬ÈÏ¹¹Ôì
-	consume;
+	consume=0;
 	time2;
 	money = 0;
 }

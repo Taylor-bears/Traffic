@@ -2,15 +2,14 @@
 #include<string>
 #include<sstream>
 #include"city.h"
-#include"fly.h"
-#include"train.h"
+#include"vehicle.h"
 #include"time.h"
 #include"graph.h"
 
 using namespace std;
 
 int main() {
-	city mycity("city.txt");
+	graph mygraph("city.txt","vehicle.txt");
 	return 0;
 }
 
