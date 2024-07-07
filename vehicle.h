@@ -28,6 +28,8 @@ public:
 	// "MAX","MAX",times timetmp1,INF,times timetmp2,INF，识别第一个type即可知道是否是无限大值
 	// 此时建立的工具类相当于邻接矩阵中的无限大这一概念，即不连接
 	void set(string, string, times, double, times, double);
+
+	vehicle& operator =(const vehicle& v);//由于后面要用到相等操作，所以这里重载
 	
 };
 

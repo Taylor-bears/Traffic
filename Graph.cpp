@@ -143,11 +143,16 @@ vehicle graph::getmin(vector<vehicle> ve, times current_time, string last_vehicl
 	// 火车等待1小时，飞机等待2小时，其他情况不等待（如果是起始地，则没有上一工具，故等待时长为0）
 
 	for (int i = 0; i < ve.size(); i++) {
-		if (ve[i].name != last_vehicle_name && i > 0) { //第一次列车没有上一车次说法
-			wait_hours = (last_vehicle_type == "train") ? 1 : (last_vehicle_type == "fly" ? 2 : 0);
+		if (last_vehicle_name == "") {
+			wait_hours = 0;//第一次的方式不存在上一方式，所以上一交通方式为0
 		}
-		else
-			wait_hours = 0;//i=0时等待时长也为0
+		else if (last_vehicle_name != ""&& ve[i].name != last_vehicle_name ) { //第一次列车没有上一车次说法
+			wait_hours = (last_vehicle_type == "train") ? 1 : 2 ;//是飞机则为2小时
+		}
+		else if (last_vehicle_name != "" && ve[i].name == last_vehicle_name) {
+			wait_hours = 0;
+		}
+		//current_times是上一次的到达时间
 		if (timecheck(current_time, ve[i].time1, wait_hours) && ve[i].consume < min) { 
 			// 如果该方式的出发时间满足条件并且耗时更小
 			minnum = i;
@@ -164,64 +169,40 @@ vehicle graph::getmin(vector<vehicle> ve, times current_time, string last_vehicl
 
 //通过此算法可得到最小时间路径（游客接受中转）
 void graph::Time_Dijkstra(int v, int n, times current_time) {
-	vector<double> dist(number, INF); // 初始化所有距离为无穷大
-	vector<int> path(number, -1); // 初始化路径
-	vector<bool> S(number, false); // 标记数组，false表示未被访问
-	//下面是原Dijkstra所不具备的，主要是为了记录到该地后上次的信息
-	vector<times> arrival_time(number); // 记录到每个顶点的到达时间
-	vector<string> last_vehicle_type(number); // 记录到每个顶点最后乘坐的交通工具类型
-	vector<string> last_vehicle_name(number);
+	vector<vehicle> dist(number);//这里变为times型，是为了方便找到它的除了耗时其他的信息
+	vector<int> path(number);
+	vector<int> S(number);
 
-	// 初始化从v出发到各点的距离和到达时间
-	for (int i = 0; i < number; i++) {
-		if (i != v && edges[v][i].front().type!="") {
-			vehicle minVehicle = getmin(edges[v][i], current_time, "", "");
-			dist[i] = minVehicle.consume;
-			S[i] = false;
-			if (minVehicle.type != "MAX"&& minVehicle.type != "") {
+	vector<times> arrival_time(number);
+	vector<string> vehicle_type(number);//第i次的交通类型
+	vector<string> vehicle_name(number);//第i次的交通名称
+
+	for (int i = 0; i < number; i++) {			 
+			dist[i] = getmin(edges[v][i], current_time, "", "");//此时wait_hours 为0
+			S[i] = 0;
+			if (dist[i].consume != 0 && dist[i].consume < INF)
 				path[i] = v;
-				arrival_time[i] = minVehicle.time2;
-				last_vehicle_type[i] = minVehicle.type;
-				last_vehicle_name[i] = minVehicle.name;
-			}
-			else {
+			else
 				path[i] = -1;
-			}
-		}
 	}
-
-	dist[v] = 0; // 自己到自己的距离为0
-	S[v] = true; // 标记为已访问
-	arrival_time[v] = current_time; // 出发点的到达时间就是当前时间
-	double mindis;
+	S[v] = 1;
+	vehicle mindis;//每一次的最小情况
 	int u = -1;
-
 	for (int i = 0; i < number - 1; i++) {
-		mindis = INF;	
-		for (int j = 0; j < number; j++) {
-			if (S[j] == 0 && dist[j] < mindis) {
+		mindis.consume = INF;
+		for (int j = 0; j < number; j++) 
+			if (S[j] == 0 && dist[j].consume < mindis.consume) {
 				u = j;
 				mindis = dist[j];
 			}
-		}		
-		S[u] = true;
+		S[u] = 1; //此时选出的最小点不可更改
+		//此时需要将最小的信息添加到上一信息当中，因为要对下一次的出发时间进行筛选
+		arrival_time.push_back(mindis.time2);
+		vehicle_type.push_back(mindis.type);
+		vehicle_name.push_back(mindis.name);
+		//修改不在S中顶点的距离
 
-		for (int j = 0; j < number; j++) {
-			if (S[j] == 0 && !edges[u][j].empty()) {
-				vehicle minVehicle = getmin(edges[u][j], arrival_time[u], last_vehicle_type[u], last_vehicle_name[u]);
-				// Time_Dijkstra函数内部，当找到更短的路径时的代码段
-				if (minVehicle.type != "MAX" && minVehicle.consume + dist[u] < dist[j]) {
-					dist[j] = minVehicle.consume + dist[u];
-					path[j] = u;
-					arrival_time[j] = minVehicle.time2; // 确保这里的time2已经是考虑了等待时间后的到达时间
-					last_vehicle_type[j] = minVehicle.type;
-					last_vehicle_name[j] = minVehicle.name;
-				}
-			}
-		}
 	}
-
-	dispaly(dist, path, S, v, n, arrival_time, last_vehicle_type);
 }
 
 
