@@ -19,3 +19,4 @@
 (Taiyuan,Shanghai)1099km
 (Yinchuan,Beijing)896km
 (Bejing,Shenzhen)2158km
+(Chengdu,Shanghai)1963km
