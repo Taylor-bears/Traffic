@@ -34,10 +34,11 @@ void vehicle::set(string x1, string x2, times t3, double t4, times t5, double x6
 }
 
 vehicle& vehicle::operator =(const vehicle& v) {
-	type = v.type;
-	name = v.name;
-	time1 = v.time1;
-	consume = v.consume;
-	time2 = v.time2;
-	money = v.money;
+	this->type = v.type;
+	this->name = v.name;
+	this->time1 = v.time1;
+	this->consume = v.consume;
+	this->time2 = v.time2;
+	this->money = v.money;
+	return *this;
 }
