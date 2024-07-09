@@ -135,7 +135,7 @@ double graph::time_transfer(int hour, int minute)
 
 //可以得到邻接矩阵某点向量时间的最小值对应的交通方式
 //同样的算某两地之间的最小方式，是需要考虑上一次的交通方式，因为中转的等待时间有要求且不同
-vehicle graph::getmin(vector<vehicle> ve, times current_time, string last_vehicle_type, string last_vehicle_name) {
+vehicle graph::getmin(vector<vehicle> ve, times current_time, string type, string last_vehicle_name) {
 	double min = INF;
 	int minnum = -1;
 	int wait_hours = 0;
@@ -145,10 +145,10 @@ vehicle graph::getmin(vector<vehicle> ve, times current_time, string last_vehicl
 		if (last_vehicle_name == "") {
 			wait_hours = 0; // 如果没有上一次交通方式，等待时间为0
 		}
-		else if (last_vehicle_name != "" && ve[i].name != last_vehicle_name) {
-			wait_hours = (last_vehicle_type == "train") ? 1 : 2; // 根据上一次的交通方式确定等待时间
+		else if ( ve[i].name != last_vehicle_name) {
+			wait_hours = (type == "train") ? 1 : 2; // 根据上一次的交通方式确定等待时间
 		}
-		else if (last_vehicle_name != "" && ve[i].name == last_vehicle_name) {
+		else if (ve[i].name == last_vehicle_name) {
 			wait_hours = 0; // 同一交通工具不等待
 		}
 
@@ -157,83 +157,95 @@ vehicle graph::getmin(vector<vehicle> ve, times current_time, string last_vehicl
 		adjusted_departure_time.addMinutes(wait_hours * 60); // 假设addMinutes是一个添加分钟的方法
 
 		// 确保出发时间晚于上一次到达时间加上等待时间
-		if (timecheck(adjusted_departure_time, ve[i].time1, 0) && ve[i].consume < min) {
-			minnum = i;
-			min = ve[i].consume;
+		if(type=="train"){
+			if (adjusted_departure_time < ve[i].time1 && ve[i].consume < min && ve[i].type == "train") {
+				minnum = i;
+				min = ve[i].consume;
+			}
+		}
+		if (type == "fly") {
+			if (adjusted_departure_time < ve[i].time1 && ve[i].consume < min && ve[i].type == "fly") {
+				minnum = i;
+				min = ve[i].consume;
+			}
 		}
 	}
-
+	
 	if (min == INF) {
 		times timetmp1(INF, INF, INF), timetmp2(INF, INF, INF);
 		return vehicle("MAX", "MAX", timetmp1, INF, timetmp2, INF);
 	}
+
+	/*if (wait_hours == 0)
+		cout << ve[minnum].name << " " << ve[minnum].time1.day << " " << ve[minnum].time1.hour << " " << wait_hours << endl;
+	if (wait_hours != 0) {
+		cout << ve[minnum].name <<" " << ve[minnum].time1.day << " " << ve[minnum].time1.hour << " " << wait_hours << endl;
+	}*/
+
 	return ve[minnum];
 }
 
 
 //通过此算法可得到最小时间路径（游客接受中转）
-void graph::Time_Dijkstra(int v, int n, times current_time) {
-	vector<times> dist(number, times(INF, INF, INF)); // 初始化所有为无穷大
-	vector<int> path(number, -1); // 初始化路径
-	vector<bool> S(number, false); // 标记数组，false表示未被访问
-	vector<times> arrival_time(number, times(INF, INF, INF)); // 记录到每个顶点的到达时间
-	vector<string> last_vehicle_type(number); // 记录到每个顶点最后乘坐的交通工具类型
-	vector<string> last_vehicle_name(number);
+void graph::Time_Dijkstra(int v, int n, times current_time, string type) {
+		vector<times> dist(number, times(INF, INF, INF));// 初始化所有为无穷大
+		vector<int> path(number, -1);// 初始化路径
+		vector<bool> S(number, false);// 标记数组，false表示未被访问
+		vector<times> arrival_time(number, times(INF, INF, INF)); // 记录到每个顶点的到达时间	              	
+		vector<string> last_vehicle_name(number);
+	
 
-	dist[v] = times(0, 0, 0); // 自己到自己为0
-	arrival_time[v] = current_time; // 出发点的到达时间就是当前时间
+		dist[v] = times(0, 0, 0);// 自己到自己为0	
+		arrival_time[v] = current_time; // 出发点的到达时间就是当前时间	
 
-	for (int i = 0; i < number; i++) {
-		if (!edges[v][i].empty()) {
-			vehicle minVehicle = getmin(edges[v][i], current_time, "", "");
-			if (minVehicle.consume != INF) {
+		for (int i = 0; i < number; i++) {			
+				vehicle minVehicle = getmin(edges[v][i], current_time, type , "");
 				dist[i] = minVehicle.time2;
-				path[i] = v;
-				arrival_time[i] = minVehicle.time2;
-				last_vehicle_type[i] = minVehicle.type;
-				last_vehicle_name[i] = minVehicle.name;
-			}
+				if (minVehicle.consume != INF && minVehicle.consume != 0) {		
+					path[i] = v;
+					arrival_time[i] = minVehicle.time2;
+					last_vehicle_name[i] = minVehicle.name;
+				}			
 		}
-	}
 
-	for (int count = 0; count < number - 1; count++) {
-		// 寻找当前未处理的最小dist顶点
-		times minTime(INF, INF, INF);
-		int u = -1;
-		for (int j = 0; j < number; j++) {
-			if (!S[j] && dist[j] < minTime) {
-				u = j;
-				minTime = dist[j];
+		for (int count = 0; count < number - 1; count++) {// 寻找当前未处理的最小dist顶点
+			times minTime(INF, INF, INF);
+			int u = -1;
+			for (int j = 0; j < number; j++) {
+				if (!S[j] && dist[j] < minTime) {
+					u = j;
+					minTime = dist[j];
+				}
 			}
-		}
-		if (u == -1) break;
+			//cout << minTime.day << " " << minTime.hour << " " << minTime.minute << endl;
+			if (u == -1) break;
 
-		S[u] = true;
+			S[u] = true;
 
-		for (int j = 0; j < number; j++) {
-			if (!S[j] && !edges[u][j].empty()) {
-				vehicle minVehicle = getmin(edges[u][j], arrival_time[u], last_vehicle_type[u], last_vehicle_name[u]);
-				if (minVehicle.consume != INF) {
-					times new_arrival_time = minVehicle.time2;
-					// 确保新路径更优
-					if (new_arrival_time < dist[j]) {
-						dist[j] = new_arrival_time;
-						path[j] = u;
-						arrival_time[j] = new_arrival_time;
-						last_vehicle_type[j] = minVehicle.type;
-						last_vehicle_name[j] = minVehicle.name;
+			for (int j = 0; j < number; j++) {
+				if (!S[j]) {
+					vehicle minVehicle = getmin(edges[u][j], arrival_time[u], type, last_vehicle_name[u]);
+					//if(minVehicle.consume!=INF)
+					//cout << " ttpd   "<<minVehicle.name << " " << minVehicle.time1.day << " " << minVehicle.time1.hour << endl;
+					if (minVehicle.consume != INF) {
+						times new_arrival_time = minVehicle.time2;
+						// 确保新路径更优
+						if (new_arrival_time < dist[j]) {
+							dist[j] = new_arrival_time;
+							path[j] = u;
+							arrival_time[j] = new_arrival_time;							
+							last_vehicle_name[j] = minVehicle.name;
+						}
 					}
 				}
 			}
 		}
-	}
 
-	display(dist, path, S, v, n, arrival_time, last_vehicle_type, last_vehicle_name);
+		display(dist, path, S, v, n, type);
 }
 
 
-void graph::display(vector<times> dist, vector<int> path, vector<bool> S, int v, int n,
-	vector<times> arrival_time, vector<string> vehicle_type, vector<string> vehicle_name) {
+void graph::display(vector<times> dist, vector<int> path, vector<bool> S, int v, int n, string type) {
 	if (!S[n]) { // 如果从v到n不存在路径
 		cout << "没有找到从出发地到目的地的路径。" << endl;
 		return;
@@ -287,7 +299,8 @@ void graph::optimal() {
 	times currentTime(day, hour, minute);
 
 	// 调用Time_Dijkstra函数计算最优路径
-	Time_Dijkstra(start, destination, currentTime); // 假设这个函数接受times对象作为参数
+	Time_Dijkstra(start, destination, currentTime, "train"); // 假设这个函数接受times对象作为参数
+	Time_Dijkstra(start, destination, currentTime, "fly");
 }
 
 
