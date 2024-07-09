@@ -28,10 +28,9 @@ public:
 	double time_transfer(int hour, int minute);//时间转换函数的申明
 	void optimal();//得到最优方案
 	void Time_Dijkstra(int v,int n, times);//第二个time是指定时间
-	vehicle getmin(const vector<vehicle>& ve, const times& current_time, 
-		const string& required_vehicle_type, const string& last_vehicle_name);//第二个time是指定时间
+	vehicle getmin(vector<vehicle> ve, times current_time, string last_vehicle_type,string last_vehicle_name);//第二个time是指定时间
 	bool timecheck(times , times , int );//将第一个时间与第二个时间比对，若比他大则返回true
-	void dispaly(vector<times> , vector<int> , vector<bool> , int , int , vector<times> , 
+	void display(vector<times> , vector<int> , vector<bool> , int , int , vector<times> , 
 		vector<string>, vector<string>);//显示某点到某点的最短路径
 	void show();
 	void tiaoshi();
