@@ -30,7 +30,7 @@ public:
 	void set(string, string, times, double, times, double);
 
 	vehicle& operator =(const vehicle& v);//由于后面要用到相等操作，所以这里重载
-	
+	bool operator==(const vehicle& other) const;
 };
 
 

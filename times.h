@@ -17,6 +17,8 @@ public:
 	bool operator<(const times& t) const;
 	void addMinutes(int minutes);
 	times operator+(const times& t) const;
+	bool operator>(const times& t) const;
+	bool operator==(const times& other) const;
 };
 
 #endif

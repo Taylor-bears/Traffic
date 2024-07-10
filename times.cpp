@@ -54,3 +54,15 @@ times times::operator+(const times& t) const {
 
 	return times(totalDays, totalHours, totalMinutes);
 }
+
+bool times::operator>(const times& t) const {
+	if (day > t.day) return true;
+	if (day < t.day) return false;
+	if (hour > t.hour) return true;
+	if (hour < t.hour) return false;
+	return minute > t.minute;
+}
+
+bool times::operator==(const times& other) const {
+	return (day == other.day && hour == other.hour && minute == other.minute);
+}

@@ -8,7 +8,7 @@ using namespace std;
 
 train::train() {
 	name="";
-	time; //默认构造
+	time1; //默认构造
 	consume;
 	time2;
 	money=0;

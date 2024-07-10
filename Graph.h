@@ -23,6 +23,14 @@ struct PathStep {
 	PathStep(int p = -1, vehicle v = vehicle()) : prev(p), veh(v) {}
 };
 
+struct PathStep3 {
+	int prev; // 出发城市的索引
+	int next; // 目的地城市的索引
+	vehicle veh; // 存储完整的交通工具信息
+
+	PathStep3(int p = -1, int n = -1, vehicle v = vehicle()) : prev(p), next(n), veh(v) {}
+};
+
 class graph { //要利用到所有的信息，所以都要继承
 public:
 	unordered_map<string, int> traffic_map;//矩阵序号和城市名称形成映射
@@ -34,15 +42,37 @@ public:
 	graph();//默认构造
 	double time_transfer(int hour, int minute);//时间转换函数的申明
 	//显示最快时间的情况
-	vehicle getmin(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name);
+	//不可换工具
+	vehicle getmin(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name);
 	void Time_Dijkstra(int start, int n, times current_time, string type);
-	void display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n, string type);//显示某点到某点的最短路径
+	//可换工具
 	vehicle getmin2(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_nam);
+	void Time_Dijkstra2(int v, int n, times current_time);
+	//直达
+	void DFS(int v, int end, const string& type, vector<PathStep3>& path, times& current_time, 
+		vector<PathStep3>& bestPath, times& bestTime, const times& preset_time);
+	void findBestPath(int start, int end, const times& preset_time);
+
+
+
 	//显示最少费用的情况
+	//不可换工具
 	vehicle getminmoney(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name);
 	void Money_Dijkstra(int v, int n, times current_time, string type);
+	//可换工具
+	vehicle getminmoney2(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name);
+	void Money_Dijkstra2(int v, int n, times current_time);
 
+
+
+	//公共显示功能
+	//不可换工具
+	void display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n, string type);
+	//可换工具
+	void display2(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n);
+	//公共调用功能
 	void optimal();//得到最优方案
+	void optimal2();
 
 	void show();
 	void tiaoshi();

@@ -10,7 +10,7 @@ using namespace std;
 
 int main() {
 	graph mygraph("city.txt","vehicle.txt");
-	mygraph.optimal();
+	mygraph.optimal2();
 	return 0;
 }
 

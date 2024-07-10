@@ -42,3 +42,8 @@ vehicle& vehicle::operator =(const vehicle& v) {
 	this->money = v.money;
 	return *this;
 }
+
+bool vehicle::operator==(const vehicle& other) const {
+	return (type == other.type && name == other.name && time1 == other.time1 &&
+		consume == other.consume && time2 == other.time2 && money == other.money);
+}
