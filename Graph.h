@@ -34,10 +34,19 @@ public:
 	graph();//默认构造
 	double time_transfer(int hour, int minute);//时间转换函数的申明
 	//显示最快时间的情况
-	void Time_Dijkstra(int start, int n, times current_time, string type);//第二个time是指定时间
-	vehicle getmin(vector<vehicle>& ve, times current_time, string last_vehicle_type,string last_vehicle_name);//第二个time是指定时间
+	vehicle getmin(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name);
+	void Time_Dijkstra(int start, int n, times current_time, string type);
 	void display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n, string type);//显示某点到某点的最短路径
+	vehicle getmin2(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_nam);
+	//显示最少费用的情况
+	vehicle getminmoney(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name);
+	void Money_Dijkstra(int v, int n, times current_time, string type);
+
 	void optimal();//得到最优方案
+
+	void show();
+	void tiaoshi();
+	bool timecheck(times time1, times time2, int wait_hours);
 };
 
 

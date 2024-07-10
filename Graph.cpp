@@ -98,10 +98,33 @@ graph::graph(const string& file_path1, const string& file_path2) {
 }*/
 }
 
+
 //默认构造函数
 graph::graph() {
 	number = 0;
 }
+
+
+bool graph::timecheck(times time1, times time2, int wait_hours) {
+	// 首先将等待时间加到time1上
+	time1.hour += wait_hours;
+	time1.day += time1.hour / 24; // 超过24小时则增加一天
+	time1.hour %= 24; // 调整小时数
+
+	if (time1.day < time2.day) {
+		return true;
+	}
+	else if (time1.day == time2.day) {
+		if (time1.hour < time2.hour) {
+			return true;
+		}
+		else if (time1.hour == time2.hour) {
+			return time1.minute <= time2.minute;
+		}
+	}
+	return false;
+}
+
 
 //时间转换函数的定义
 double graph::time_transfer(int hour, int minute)
@@ -112,6 +135,9 @@ double graph::time_transfer(int hour, int minute)
 	return a / 10.0;
 }
 
+
+//时间模块
+//(不允许中间变换交通工具)
 //可以得到邻接矩阵某点向量时间的最小值对应的交通方式
 //同样的算某两地之间的最小方式，是需要考虑上一次的交通方式，因为中转的等待时间有要求且不同
 vehicle graph::getmin(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name) {
@@ -133,10 +159,10 @@ vehicle graph::getmin(vector<vehicle>& ve, times current_time, string type, stri
 		if ( adjusted_time > v.time1) continue;
 
 		// 计算到达时间，如果这是目前为止找到的最快路径，更新minTime和minVehicle
-		times totalTime;
-		totalTime = v.time2;
-		if (totalTime < minTime) {
-			minTime = totalTime;
+		times k;
+		k = v.time2;
+		if (k < minTime) {
+			minTime = k;
 			minVehicle = v;
 		}
 	}
@@ -184,6 +210,144 @@ void graph::Time_Dijkstra(int v, int n, times current_time, string type) {
 }
 
 
+//允许变换交通工具（时间模块）
+vehicle graph::getmin2(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name) {
+	times minTime = times(INF, INF, INF);
+	vehicle minVehicle;
+	//这里不跳过类型不同的了，但仍然需要记录类型，因为类型决定了中转的时间
+	for (auto& v : ve) {
+		times adjusted_time;
+		adjusted_time = current_time; // 调整后的到达时间
+
+		// 如果有上一次的交通工具，并且名称不同，则根据类型添加等待时间
+		if (!last_vehicle_name.empty() && v.name != last_vehicle_name) {
+			int wait_time = (last_vehicle_type == "fly") ? 120 : 60; // 飞机换乘等待2小时，火车换乘等待1小时(换算为分钟)
+			adjusted_time.addMinutes(wait_time);
+		}
+
+		// 如果当前时间晚于调整后的出发时间，跳过这个交通工具
+		if (adjusted_time > v.time1) continue;
+
+		// 计算到达时间，如果这是目前为止找到的最快路径，更新minTime和minVehicle
+		times k;
+		k = v.time2;
+		if (k < minTime) {
+			minTime = k;
+			minVehicle = v;
+		}
+	}
+	return minVehicle;
+}
+
+
+void graph::Time_Dijkstra(int v, int n, times current_time, string type) {
+	vector<bool> visited(number, false);
+	vector<times> dist(number, times(INF, INF, INF));
+	vector<PathStep> path(number); // 使用PathStep替换之前的prev数组
+	dist[v] = current_time;
+
+	for (int i = 0; i < number; ++i) {
+		int u = -1;
+		times minTime(INF, INF, INF);
+		for (int j = 0; j < number; ++j) {
+			if (!visited[j] && dist[j] < minTime) {
+				u = j;
+				minTime = dist[j];
+			}
+		}
+
+		if (u == -1) break;
+		visited[u] = true;
+
+		for (int j = 0; j < edges[u].size(); ++j) {
+			for (auto& v : edges[u][j]) {
+				if (v.type != type) continue;
+				vehicle minVeh = getmin(edges[u][j], dist[u], type, path[u].veh.name);
+				if (minVeh.name.empty()) continue; // 如果没有合适的交通工具，跳过
+
+				times arrivalTime;
+				arrivalTime = minVeh.time2;
+				if (dist[u] < arrivalTime && arrivalTime < dist[j]) {
+					dist[j] = arrivalTime;
+					path[j] = PathStep(u, minVeh); // 存储前一个节点和使用的交通工具信息
+				}
+			}
+		}
+	}
+
+	display(dist, path, visited, v, n, type);
+}
+
+
+//费用模块
+vehicle graph::getminmoney(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name) {
+	int minMoney = INF;
+	vehicle minVehicle;
+	for (auto& v : ve) {
+		if (v.type != type) continue; // 确保交通工具类型匹配
+
+		times adjusted_time;
+		adjusted_time = current_time; // 调整后的到达时间
+
+		// 如果有上一次的交通工具，并且名称不同，则根据类型添加等待时间
+		if (!last_vehicle_name.empty() && v.name != last_vehicle_name) {
+			int wait_time = (type == "fly") ? 120 : 60; // 飞机换乘等待2小时，火车换乘等待1小时(换算为分钟)
+			adjusted_time.addMinutes(wait_time);
+		}
+
+		// 如果当前时间晚于调整后的出发时间，跳过这个交通工具
+		if (adjusted_time > v.time1) continue;
+
+		// 计算到达时间，如果这是目前为止找到的最快路径，更新minTime和minVehicle
+		int k;
+		k = v.money;
+		if (k < minMoney) {
+			minMoney = k;
+			minVehicle = v;
+		}
+	}
+	return minVehicle;
+}
+
+
+void graph::Money_Dijkstra(int v, int n, times current_time, string type) {
+	vector<bool> visited(number, false);
+	vector<times> dist(number, times(INF, INF, INF));
+	vector<PathStep> path(number); // 使用PathStep替换之前的prev数组
+	dist[v] = current_time;
+
+	for (int i = 0; i < number; ++i) {
+		int u = -1;
+		times minTime(INF, INF, INF);
+		for (int j = 0; j < number; ++j) {
+			if (!visited[j] && dist[j] < minTime) {
+				u = j;
+				minTime = dist[j];
+			}
+		}
+
+		if (u == -1) break;
+		visited[u] = true;
+
+		for (int j = 0; j < edges[u].size(); ++j) {
+			for (auto& v : edges[u][j]) {
+				if (v.type != type) continue;
+				vehicle minVeh = getminmoney(edges[u][j], dist[u], type, path[u].veh.name); // 使用getminmoney函数找出费用最便宜的交通工具
+				if (minVeh.name.empty()) continue; // 如果没有合适的交通工具，跳过
+
+				times arrivalTime;
+				arrivalTime = minVeh.time2;
+				if (dist[u] < arrivalTime && arrivalTime < dist[j]) {
+					dist[j] = arrivalTime;
+					path[j] = PathStep(u, minVeh); // 存储前一个节点和使用的交通工具信息
+				}
+			}
+		}
+	}
+
+	display(dist, path, visited, v, n, type);
+}
+
 
 void graph::display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n, string type) {
 	cout << "Path from " << mycity.name[v] << " to " << mycity.name[n] << ":" << endl;
@@ -223,8 +387,6 @@ void graph::display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S
 }
 
 
-
-
 //最优方案定义
 void graph::optimal() {
 	string city_name1, city_name2, transport_type;
@@ -261,3 +423,32 @@ void graph::optimal() {
 }
 
 
+//调试用
+void graph::show() {
+	for (int i = 0; i < number; i++) {
+		cout << mycity.name[i] << endl;
+	}
+	for (int i = 0; i < number; i++) {
+		for (int j = 0; j < number; j++) {
+			for (auto k : edges[i][j]) {
+				cout << mycity.name[i] << " " << mycity.name[j] << " " << k.type << " " << k.name << " " << k.time1.day << ":" << k.time1.hour << ":" << k.time1.minute << " "
+					<< k.consume << " " << k.time2.day << ":" << k.time2.hour << ":" << k.time2.minute << endl;
+			}
+		}
+	}
+}
+
+
+//调试用
+void graph::tiaoshi() {
+	for (int i = 0; i < number; i++) {
+		for (int j = 0; j < number; j++) {
+			for (auto k : edges[i][j]) {
+				if (!timecheck(k.time1, k.time2, 0)) {
+					cout << mycity.name[i] << " " << mycity.name[j] << " " << k.type << " " << k.name << " " << k.time1.day << ":" << k.time1.hour << ":" << k.time1.minute << " "
+						<< k.consume << k.time2.day << ":" << k.time2.hour << ":" << k.time2.minute << endl;
+				}
+			}
+		}
+	}
+}
