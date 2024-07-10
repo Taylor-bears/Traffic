@@ -16,6 +16,13 @@ using namespace std;
 //矩阵中的值其实就是边的权值（交通方式），由于两城市间存在多个交通方式，一个点的值就会对应多个交通方式，
 //故矩阵中的每个点都是一个vector，而vectoe中每个元素就是一个类（train或者fly）
 
+struct PathStep {
+	int prev;
+	vehicle veh; // 存储完整的交通工具信息
+
+	PathStep(int p = -1, vehicle v = vehicle()) : prev(p), veh(v) {}
+};
+
 class graph { //要利用到所有的信息，所以都要继承
 public:
 	unordered_map<string, int> traffic_map;//矩阵序号和城市名称形成映射
@@ -26,14 +33,11 @@ public:
 	graph(const string& file_path1, const string& file_path2);
 	graph();//默认构造
 	double time_transfer(int hour, int minute);//时间转换函数的申明
+	//显示最快时间的情况
+	void Time_Dijkstra(int start, int n, times current_time, string type);//第二个time是指定时间
+	vehicle getmin(vector<vehicle>& ve, times current_time, string last_vehicle_type,string last_vehicle_name);//第二个time是指定时间
+	void display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n, string type);//显示某点到某点的最短路径
 	void optimal();//得到最优方案
-	void Time_Dijkstra(int v,int n, times);//第二个time是指定时间
-	vehicle getmin(vector<vehicle> ve, times current_time, string last_vehicle_type,string last_vehicle_name);//第二个time是指定时间
-	bool timecheck(times , times , int );//将第一个时间与第二个时间比对，若比他大则返回true
-	void display(vector<times> , vector<int> , vector<bool> , int , int , vector<times> , 
-		vector<string>, vector<string>);//显示某点到某点的最短路径
-	void show();
-	void tiaoshi();
 };
 
 

@@ -4,6 +4,7 @@
 #include<string>
 #include<fstream>
 #include<vector>
+#include<stack>
 const int INF = 0x3f3f3f3f;
 
 using namespace std;
@@ -99,29 +100,7 @@ graph::graph(const string& file_path1, const string& file_path2) {
 
 //默认构造函数
 graph::graph() {
-	//无
-}
-
-//所有的方案可行的前提都是他的时间要比给定的晚，而不能早
-// 比较time1加上等待时间是否小于等于time2，这里加上比较时长，是为了便于后面处理中转站需要等待的情况
-bool graph::timecheck(times time1, times time2, int wait_hours) {
-	// 首先将等待时间加到time1上
-	time1.hour += wait_hours;
-	time1.day += time1.hour / 24; // 超过24小时则增加一天
-	time1.hour %= 24; // 调整小时数
-
-	if (time1.day < time2.day) {
-		return true;
-	}
-	else if (time1.day == time2.day) {
-		if (time1.hour < time2.hour) {
-			return true;
-		}
-		else if (time1.hour == time2.hour) {
-			return time1.minute <= time2.minute;
-		}
-	}
-	return false;
+	number = 0;
 }
 
 //时间转换函数的定义
@@ -135,147 +114,120 @@ double graph::time_transfer(int hour, int minute)
 
 //可以得到邻接矩阵某点向量时间的最小值对应的交通方式
 //同样的算某两地之间的最小方式，是需要考虑上一次的交通方式，因为中转的等待时间有要求且不同
-vehicle graph::getmin(vector<vehicle> ve, times current_time, string type, string last_vehicle_name) {
-	double min = INF;
-	int minnum = -1;
-	int wait_hours = 0;
+vehicle graph::getmin(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name) {
+	times minTime = times(INF, INF, INF);
+	vehicle minVehicle;
+	for (auto& v : ve) {
+		if (v.type != type) continue; // 确保交通工具类型匹配
 
-	for (int i = 0; i < ve.size(); i++) {
-		// 根据上一次的交通方式确定等待时间
-		if (last_vehicle_name == "") {
-			wait_hours = 0; // 如果没有上一次交通方式，等待时间为0
-		}
-		else if ( ve[i].name != last_vehicle_name) {
-			wait_hours = (type == "train") ? 1 : 2; // 根据上一次的交通方式确定等待时间
-		}
-		else if (ve[i].name == last_vehicle_name) {
-			wait_hours = 0; // 同一交通工具不等待
+		times adjusted_time;
+		adjusted_time = current_time; // 调整后的到达时间
+
+		// 如果有上一次的交通工具，并且名称不同，则根据类型添加等待时间
+		if (!last_vehicle_name.empty() && v.name != last_vehicle_name) {
+			int wait_time = (type == "fly") ? 120 : 60; // 飞机换乘等待2小时，火车换乘等待1小时(换算为分钟)
+			adjusted_time.addMinutes(wait_time);
 		}
 
-		// 计算考虑等待时间后的出发时间
-		times adjusted_departure_time = current_time;
-		adjusted_departure_time.addMinutes(wait_hours * 60); // 假设addMinutes是一个添加分钟的方法
+		// 如果当前时间晚于调整后的出发时间，跳过这个交通工具
+		if ( adjusted_time > v.time1) continue;
 
-		// 确保出发时间晚于上一次到达时间加上等待时间
-		if(type=="train"){
-			if (adjusted_departure_time < ve[i].time1 && ve[i].consume < min && ve[i].type == "train") {
-				minnum = i;
-				min = ve[i].consume;
-			}
-		}
-		if (type == "fly") {
-			if (adjusted_departure_time < ve[i].time1 && ve[i].consume < min && ve[i].type == "fly") {
-				minnum = i;
-				min = ve[i].consume;
-			}
+		// 计算到达时间，如果这是目前为止找到的最快路径，更新minTime和minVehicle
+		times totalTime;
+		totalTime = v.time2;
+		if (totalTime < minTime) {
+			minTime = totalTime;
+			minVehicle = v;
 		}
 	}
-	
-	if (min == INF) {
-		times timetmp1(INF, INF, INF), timetmp2(INF, INF, INF);
-		return vehicle("MAX", "MAX", timetmp1, INF, timetmp2, INF);
-	}
-
-	/*if (wait_hours == 0)
-		cout << ve[minnum].name << " " << ve[minnum].time1.day << " " << ve[minnum].time1.hour << " " << wait_hours << endl;
-	if (wait_hours != 0) {
-		cout << ve[minnum].name <<" " << ve[minnum].time1.day << " " << ve[minnum].time1.hour << " " << wait_hours << endl;
-	}*/
-
-	return ve[minnum];
+	return minVehicle;
 }
 
 
 //通过此算法可得到最小时间路径（游客接受中转）
 void graph::Time_Dijkstra(int v, int n, times current_time, string type) {
-		vector<times> dist(number, times(INF, INF, INF));// 初始化所有为无穷大
-		vector<int> path(number, -1);// 初始化路径
-		vector<bool> S(number, false);// 标记数组，false表示未被访问
-		vector<times> arrival_time(number, times(INF, INF, INF)); // 记录到每个顶点的到达时间	              	
-		vector<string> last_vehicle_name(number);
-	
+	vector<bool> visited(number, false);
+	vector<times> dist(number, times(INF, INF, INF));
+	vector<PathStep> path(number); // 使用PathStep替换之前的prev数组
+	dist[v] = current_time;
 
-		dist[v] = times(0, 0, 0);// 自己到自己为0	
-		arrival_time[v] = current_time; // 出发点的到达时间就是当前时间	
-
-		for (int i = 0; i < number; i++) {			
-				vehicle minVehicle = getmin(edges[v][i], current_time, type , "");
-				dist[i] = minVehicle.time2;
-				if (minVehicle.consume != INF && minVehicle.consume != 0) {		
-					path[i] = v;
-					arrival_time[i] = minVehicle.time2;
-					last_vehicle_name[i] = minVehicle.name;
-				}			
-		}
-
-		for (int count = 0; count < number - 1; count++) {// 寻找当前未处理的最小dist顶点
-			times minTime(INF, INF, INF);
-			int u = -1;
-			for (int j = 0; j < number; j++) {
-				if (!S[j] && dist[j] < minTime) {
-					u = j;
-					minTime = dist[j];
-				}
-			}
-			//cout << minTime.day << " " << minTime.hour << " " << minTime.minute << endl;
-			if (u == -1) break;
-
-			S[u] = true;
-
-			for (int j = 0; j < number; j++) {
-				if (!S[j]) {
-					vehicle minVehicle = getmin(edges[u][j], arrival_time[u], type, last_vehicle_name[u]);
-					//if(minVehicle.consume!=INF)
-					//cout << " ttpd   "<<minVehicle.name << " " << minVehicle.time1.day << " " << minVehicle.time1.hour << endl;
-					if (minVehicle.consume != INF) {
-						times new_arrival_time = minVehicle.time2;
-						// 确保新路径更优
-						if (new_arrival_time < dist[j]) {
-							dist[j] = new_arrival_time;
-							path[j] = u;
-							arrival_time[j] = new_arrival_time;							
-							last_vehicle_name[j] = minVehicle.name;
-						}
-					}
-				}
+	for (int i = 0; i < number; ++i) {
+		int u = -1;
+		times minTime(INF, INF, INF);
+		for (int j = 0; j < number; ++j) {
+			if (!visited[j] && dist[j] < minTime) {
+				u = j;
+				minTime = dist[j];
 			}
 		}
 
-		display(dist, path, S, v, n, type);
+		if (u == -1) break;
+		visited[u] = true;
+
+		for (int j = 0; j < edges[u].size(); ++j) {
+			for (auto& v : edges[u][j]) {
+				if (v.type != type) continue;
+				vehicle minVeh = getmin(edges[u][j], dist[u], type, path[u].veh.name);
+				if (minVeh.name.empty()) continue; // 如果没有合适的交通工具，跳过
+
+				times arrivalTime;
+			    arrivalTime = minVeh.time2;
+				if (dist[u] < arrivalTime && arrivalTime < dist[j]) {
+					dist[j] = arrivalTime;
+					path[j] = PathStep(u, minVeh); // 存储前一个节点和使用的交通工具信息
+				}
+			}
+		}
+	}
+
+	display(dist, path, visited, v, n, type);
 }
 
 
-void graph::display(vector<times> dist, vector<int> path, vector<bool> S, int v, int n, string type) {
-	if (!S[n]) { // 如果从v到n不存在路径
-		cout << "没有找到从出发地到目的地的路径。" << endl;
-		return;
-	}
 
-	cout << "从出发地到目的地的最快方式如下：" << endl;
-	vector<int> apath;
+void graph::display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n, string type) {
+	cout << "Path from " << mycity.name[v] << " to " << mycity.name[n] << ":" << endl;
 	int current = n;
-	while (current != v) {
-		apath.push_back(current);
-		current = path[current];
-	}
-	apath.push_back(v); // 添加起始点
+	stack<vehicle> reversePath; // 使用vehicle来存储完整的交通工具信息
+	vector<string> cities; // 存储经过的城市名称
 
-	for (int i = apath.size() - 2; i >= 0; i--) { // 注意这里的遍历方式和索引
-		int from = apath[i + 1], to = apath[i];
-		vehicle& v = edges[from][to][0]; // 假设每个城市间只有一条最快路径
-		cout << "从" << mycity.name[from] << "出发, 到" << mycity.name[to] << ", 类型："
-			<< v.type << ", 编号：" << v.name << ", 在7月"
-			<< v.time1.day << "号" << v.time1.hour << "点" << v.time1.minute << "分出发，耗时"
-			<< v.consume << "小时，预估7月" << v.time2.day << "号" << v.time2.hour << "点" << v.time2.minute << "分到达，费用："
-			<< v.money << "元" << endl;
+	while (current != v) {
+		if (current == -1) {
+			cout << "No path found." << endl;
+			return;
+		}
+		reversePath.push(path[current].veh);
+		cities.push_back(mycity.name[current]); // 记录经过的城市
+		current = path[current].prev;
+	}
+	cities.push_back(mycity.name[v]); // 添加起始城市
+
+	// 输出路径信息
+	string startCity = cities.back();
+	cities.pop_back(); // 弹出起始城市
+
+	while (!reversePath.empty()) {
+		vehicle veh = reversePath.top();
+		reversePath.pop();
+
+		cout << "从" << startCity << "出发, 到" << cities.back() << ", 类型："
+			<< veh.type << ", 编号：" << veh.name << ", 在7月"
+			<< veh.time1.day << "号" << veh.time1.hour << "点" << veh.time1.minute << "分出发，耗时"
+			<< veh.consume << "小时，预估7月" << veh.time2.day << "号" << veh.time2.hour << "点" <<
+			veh.time2.minute << "分到达，费用：" << veh.money << "元" << endl;
+
+
+		startCity = cities.back(); // 更新起始城市为当前到达城市
+		cities.pop_back(); // 弹出已经输出的城市
 	}
 }
+
 
 
 
 //最优方案定义
 void graph::optimal() {
-	string city_name1, city_name2;
+	string city_name1, city_name2, transport_type;
 	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
 	cout << "请输入出发地：" << endl;
 	cin >> city_name1;
@@ -290,46 +242,22 @@ void graph::optimal() {
 	int start = traffic_map[city_name1];
 	int destination = traffic_map[city_name2];
 
-	// 让用户输入出发时间（只包括日、时、分）
 	int day, hour, minute;
 	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6号15点30分）：" << endl;
 	cin >> day >> hour >> minute;
 
-	// 创建一个times对象来表示用户输入的出发时间
 	times currentTime(day, hour, minute);
 
-	// 调用Time_Dijkstra函数计算最优路径
-	Time_Dijkstra(start, destination, currentTime, "train"); // 假设这个函数接受times对象作为参数
-	Time_Dijkstra(start, destination, currentTime, "fly");
+	cout << "请选择交通工具类型（train/fly）：" << endl;
+	cin >> transport_type;
+
+	if (transport_type != "train" && transport_type != "fly") {
+		cout << "输入的交通工具类型不正确，请重新输入。" << endl;
+		return;
+	}
+
+	cout << "计算" << (transport_type == "train" ? "火车" : "飞机") << "的最优路径..." << endl;
+	Time_Dijkstra(start, destination, currentTime, transport_type);
 }
 
 
-//调试用
-void graph::show() {
-	for (int i = 0; i < number; i++) {
-		cout << mycity.name[i]<<endl;
-	}
-	for (int i = 0; i < number; i++) {
-		for (int j = 0; j < number; j++) {
-			for(auto k:edges[i][j]){
-				cout << mycity.name[i] << " " << mycity.name[j] << " " << k.type << " " << k.name << " " << k.time1.day << ":" << k.time1.hour << ":" << k.time1.minute << " "
-					<< k.consume << " " << k.time2.day << ":" << k.time2.hour << ":" << k.time2.minute << endl;
-			}
-		}
-	}
-}
-
-
-//调试用
-void graph::tiaoshi() {
-	for (int i = 0; i < number; i++) {
-		for (int j = 0; j < number; j++) {
-			for (auto k : edges[i][j]) {
-				if (!timecheck(k.time1, k.time2, 0)) {
-					cout << mycity.name[i] << " " << mycity.name[j] << " " << k.type << " " << k.name << " " << k.time1.day << ":" << k.time1.hour << ":" << k.time1.minute << " "
-						<< k.consume << k.time2.day << ":" << k.time2.hour << ":" << k.time2.minute << endl;
-				}
-			}
-		}
-	}
-}
