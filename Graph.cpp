@@ -172,6 +172,7 @@ vehicle graph::getmin(vector<vehicle>& ve, times current_time, string type, stri
 
 //通过此算法可得到最小时间路径（游客接受中转）
 void graph::Time_Dijkstra(int v, int n, times current_time, string type) {
+	//原狄克斯特拉算法部分，根据需求我改变了类型
 	vector<bool> visited(number, false);
 	vector<times> dist(number, times(INF, INF, INF));
 	vector<PathStep> path(number); // 使用PathStep替换之前的prev数组
@@ -279,23 +280,29 @@ void graph::Time_Dijkstra2(int v, int n, times current_time) {
 
 
 //直达（时间最短）
-void graph::DFS(int v, int end, const string& type, vector<PathStep3>& path, times& current_time, 
-	vector<PathStep3>& bestPath, times& bestTime, const times& preset_time) {
-	if (v == end) { // 使用end参数来判断是否到达目的地
+void graph::DFS(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
+	times& current_time, vector<PathStep3>& bestPath, times& bestTime) {
+	if (v == end) { // 到达目的地
 		if (current_time < bestTime || bestTime.day == INF) {
-			bestTime = current_time;
-			bestPath = path;
+			bestTime = current_time;// 更新最短时间
+			bestPath = path;// 更新最优路径
 		}
 		return;
 	}
 
 	for (int j = 0; j < edges[v].size(); ++j) {
 		for (auto& veh : edges[v][j]) {
-			if (veh.type != type) continue;
-			if (preset_time < veh.time1 && (path.empty() || current_time < veh.time1)) {
-				times arrivalTime = veh.time2;
+			if (veh.type != type) continue; // 交通工具类型不匹配
+			// 确保交通工具名称匹配或是路径的第一步
+
+			if (!path.empty() && vehicleName != "" && veh.name != vehicleName) continue;
+
+			if (current_time < veh.time1 || path.empty()) {
+				times arrivalTime;
+				arrivalTime = veh.time2;
 				path.push_back(PathStep3(v, j, veh));
-				DFS(j, end, type, path, arrivalTime, bestPath, bestTime, preset_time);
+				string nextVehicleName = vehicleName == "" ? veh.name : vehicleName;
+				DFS(j, end, type, nextVehicleName, path, arrivalTime, bestPath, bestTime);
 				path.pop_back();
 			}
 		}
@@ -303,16 +310,16 @@ void graph::DFS(int v, int end, const string& type, vector<PathStep3>& path, tim
 }
 
 
+
 //这里是在飞机和列车中，进行了挑选，到时候调整一下使之可以分别显示两个的
-void graph::findBestPath(int start, int end, const times& preset_time) {
+void graph::findBestPath(int start, int end, const times& preset_time, const string& type) {
 	vector<PathStep3> bestPath;
 	times bestTime(INF, INF, INF); // 初始化最短时间为无穷大
 
-	for (auto& type : { "train", "fly" }) {
-		vector<PathStep3> path;
-		times current_time = preset_time; // 创建一个可以修改的times对象，用于DFS调用
-		DFS(start, end, type, path, current_time, bestPath, bestTime, preset_time);
-	}
+	vector<PathStep3> path;
+	times current_time = preset_time;
+	// 调用DFS时，vehicleName参数为空字符串，表示还没有选择交通工具
+	DFS(start, end, type, "", path, current_time, bestPath, bestTime);
 
 	// 输出最优路径
 	cout << "Best Path from " << mycity.name[start] << " to " << mycity.name[end] << " starting after preset time:" << endl;
@@ -321,14 +328,13 @@ void graph::findBestPath(int start, int end, const times& preset_time) {
 		return;
 	}
 	for (auto& step : bestPath) {
-		cout << "From " << mycity.name[step.prev] << " to " << mycity.name[step.next]
-			<< ", Type: " << step.veh.type << ", Name: " << step.veh.name << ", Depart: "
-			<< step.veh.time1.day << "-" << step.veh.time1.hour << ":" << step.veh.time1.minute
-			<< ", Arrive: " << step.veh.time2.day << "-" << step.veh.time2.hour << ":" << step.veh.time2.minute
-			<< ", Cost: " << step.veh.money << "元" << endl;
+		cout << "从" << mycity.name[step.prev] << "出发, 到" << mycity.name[step.next]
+			<< ", 类型: " << step.veh.type << ", 编号:" << step.veh.name << ", 在7月"
+			<< step.veh.time1.day << "号" << step.veh.time1.hour << "点" << step.veh.time1.minute
+			<< "分出发，耗时" << step.veh.consume << "小时，预估7月" << step.veh.time2.day << "号"
+			<< step.veh.time2.hour << "点" << step.veh.time2.minute << "分到达，费用：" << step.veh.money << "元" << endl;
 	}
 }
-
 
 
 
@@ -547,6 +553,67 @@ void graph::display2(vector<times>& dist, vector<PathStep>& path, vector<bool>& 
 }
 
 
+//直达（费用最少）
+void graph::DFS2(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
+	times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost) {
+	if (v == end) { //费用不同于时间在于，需要将金钱不断地累加，得到最后的总金额才能比较
+		//而时间只需要比较最后一趟的到达时间便可知道哪种最快
+		double currentCost = 0;
+		for (auto& step : path) {
+			currentCost += step.veh.money;
+		}
+
+		if (currentCost < cheapestCost || cheapestCost == INF) {
+			cheapestCost = currentCost;
+			bestTime = current_time;
+			bestPath = path;
+		}
+		return;
+	}
+
+	for (int j = 0; j < edges[v].size(); ++j) {
+		for (auto& veh : edges[v][j]) {
+			if (veh.type != type) continue;
+			if (!path.empty() && vehicleName != "" && veh.name != vehicleName) continue;
+
+			if (current_time < veh.time1 || path.empty()) {
+				times arrivalTime;
+				arrivalTime = veh.time2;
+				path.push_back(PathStep3(v, j, veh));
+				string nextVehicleName = vehicleName == "" ? veh.name : vehicleName;
+				DFS2(j, end, type, nextVehicleName, path, arrivalTime, bestPath, bestTime, cheapestCost);
+				path.pop_back();
+			}
+		}
+	}
+}
+
+
+void graph::findBestPath2(int start, int end, const times& preset_time, const string& type) {
+	vector<PathStep3> bestPath;
+	times bestTime(INF, INF, INF);
+	double cheapestCost = INF;
+
+	vector<PathStep3> path;
+	times current_time = preset_time;
+
+	DFS2(start, end, type, "", path, current_time, bestPath, bestTime, cheapestCost);
+
+	cout << "Cheapest Path from " << mycity.name[start] << " to " << mycity.name[end] << " starting after preset time:" << endl;
+	if (bestPath.empty()) {
+		cout << "No path found." << endl;
+		return;
+	}
+	for (auto& step : bestPath) {
+		cout << "从" << mycity.name[step.prev] << "出发, 到" << mycity.name[step.next]
+			<< ", 类型: " << step.veh.type << ", 编号:" << step.veh.name << ", 在7月"
+			<< step.veh.time1.day << "号" << step.veh.time1.hour << "点" << step.veh.time1.minute
+			<< "分出发，耗时" << step.veh.consume << "小时，预估7月" << step.veh.time2.day << "号"
+			<< step.veh.time2.hour << "点" << step.veh.time2.minute << "分到达，费用：" << step.veh.money << "元" << endl;
+	}
+}
+
+
 //最优方案定义
 void graph::optimal() {
 	string city_name1, city_name2, transport_type;
@@ -603,10 +670,13 @@ void graph::optimal2() {
 	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6号15点30分）：" << endl;
 	cin >> day >> hour >> minute;
 
+	cout << "请选择交通工具类型（train/fly）：" << endl;
+	cin >> transport_type;
+
 	times currentTime(day, hour, minute);
 
 	cout << "计算" << (transport_type == "train" ? "火车" : "飞机") << "的最优路径..." << endl;
-	findBestPath(start, destination, currentTime);
+	findBestPath(start, destination, currentTime, transport_type);
 }
 
 

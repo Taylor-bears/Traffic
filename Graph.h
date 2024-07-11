@@ -41,6 +41,8 @@ public:
 	graph(const string& file_path1, const string& file_path2);
 	graph();//默认构造
 	double time_transfer(int hour, int minute);//时间转换函数的申明
+
+
 	//显示最快时间的情况
 	//不可换工具
 	vehicle getmin(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name);
@@ -49,9 +51,9 @@ public:
 	vehicle getmin2(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_nam);
 	void Time_Dijkstra2(int v, int n, times current_time);
 	//直达
-	void DFS(int v, int end, const string& type, vector<PathStep3>& path, times& current_time, 
-		vector<PathStep3>& bestPath, times& bestTime, const times& preset_time);
-	void findBestPath(int start, int end, const times& preset_time);
+	void DFS(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
+		times& current_time, vector<PathStep3>& bestPath, times& bestTime);
+	void findBestPath(int start, int end, const times& preset_time, const string& type);
 
 
 
@@ -62,7 +64,10 @@ public:
 	//可换工具
 	vehicle getminmoney2(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name);
 	void Money_Dijkstra2(int v, int n, times current_time);
-
+	//直达
+	void DFS2(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
+		times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost);
+	void findBestPath2(int start, int end, const times& preset_time, const string& type);
 
 
 	//公共显示功能
@@ -74,6 +79,8 @@ public:
 	void optimal();//得到最优方案
 	void optimal2();
 
+
+	//调试功能
 	void show();
 	void tiaoshi();
 	bool timecheck(times time1, times time2, int wait_hours);
