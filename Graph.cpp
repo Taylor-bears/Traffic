@@ -181,7 +181,7 @@ void graph::Time_Dijkstra(int v, int n, times current_time, string type) {
 	for (int i = 0; i < number; ++i) {
 		int u = -1;
 		times minTime(INF, INF, INF);
-		for (int j = 0; j < number; ++j) {
+		for (int j = 0; j < number; j++) {
 			if (!visited[j] && dist[j] < minTime) {
 				u = j;
 				minTime = dist[j];
@@ -191,7 +191,7 @@ void graph::Time_Dijkstra(int v, int n, times current_time, string type) {
 		if (u == -1) break;
 		visited[u] = true;
 
-		for (int j = 0; j < edges[u].size(); ++j) {
+		for (int j = 0; j < edges[u].size(); j++) {
 			for (auto& v : edges[u][j]) {
 				if (v.type != type) continue;
 				vehicle minVeh = getmin(edges[u][j], dist[u], type, path[u].veh.name);
@@ -247,10 +247,10 @@ void graph::Time_Dijkstra2(int v, int n, times current_time) {
 	vector<PathStep> path(number); // 使用PathStep替换之前的prev数组
 	dist[v] = current_time;
 
-	for (int i = 0; i < number; ++i) {
+	for (int i = 0; i < number; i++) {
 		int u = -1;
 		times minTime(INF, INF, INF);
-		for (int j = 0; j < number; ++j) {
+		for (int j = 0; j < number; j++) {
 			if (!visited[j] && dist[j] < minTime) {
 				u = j;
 				minTime = dist[j];
@@ -290,7 +290,7 @@ void graph::DFS(int v, int end, const string& type, const string& vehicleName, v
 		return;
 	}
 
-	for (int j = 0; j < edges[v].size(); ++j) {
+	for (int j = 0; j < edges[v].size(); j++) {
 		for (auto& veh : edges[v][j]) {
 			if (veh.type != type) continue; // 交通工具类型不匹配
 			// 确保交通工具名称匹配或是路径的第一步
@@ -379,7 +379,7 @@ void graph::Money_Dijkstra(int v, int n, times current_time, string type) {
 	for (int i = 0; i < number; ++i) {
 		int u = -1;
 		times minTime(INF, INF, INF);
-		for (int j = 0; j < number; ++j) {
+		for (int j = 0; j < number; j++) {
 			if (!visited[j] && dist[j] < minTime) {
 				u = j;
 				minTime = dist[j];
@@ -389,7 +389,7 @@ void graph::Money_Dijkstra(int v, int n, times current_time, string type) {
 		if (u == -1) break;
 		visited[u] = true;
 
-		for (int j = 0; j < edges[u].size(); ++j) {
+		for (int j = 0; j < edges[u].size(); j++) {
 			for (auto& v : edges[u][j]) {
 				if (v.type != type) continue;
 				vehicle minVeh = getminmoney(edges[u][j], dist[u], type, path[u].veh.name); // 使用getminmoney函数找出费用最便宜的交通工具
@@ -445,10 +445,10 @@ void graph::Money_Dijkstra2(int v, int n, times current_time) {
 	vector<PathStep> path(number); // 使用PathStep替换之前的prev数组
 	dist[v] = current_time;
 
-	for (int i = 0; i < number; ++i) {
+	for (int i = 0; i < number; i++) {
 		int u = -1;
 		times minTime(INF, INF, INF);
-		for (int j = 0; j < number; ++j) {
+		for (int j = 0; j < number; j++) {
 			if (!visited[j] && dist[j] < minTime) {
 				u = j;
 				minTime = dist[j];
@@ -458,7 +458,7 @@ void graph::Money_Dijkstra2(int v, int n, times current_time) {
 		if (u == -1) break;
 		visited[u] = true;
 
-		for (int j = 0; j < edges[u].size(); ++j) {
+		for (int j = 0; j < edges[u].size(); j++) {
 			for (auto& v : edges[u][j]) {
 				vehicle minVeh = getminmoney2(edges[u][j], dist[u], path[u].veh.type, path[u].veh.name);
 				if (minVeh.name.empty()) continue; // 如果没有合适的交通工具，跳过
@@ -571,7 +571,7 @@ void graph::DFS2(int v, int end, const string& type, const string& vehicleName, 
 		return;
 	}
 
-	for (int j = 0; j < edges[v].size(); ++j) {
+	for (int j = 0; j < edges[v].size(); j++) {
 		for (auto& veh : edges[v][j]) {
 			if (veh.type != type) continue;
 			if (!path.empty() && vehicleName != "" && veh.name != vehicleName) continue;
@@ -680,6 +680,13 @@ void graph::optimal2() {
 }
 
 
+
+//自驾情况
+void selfdrive() {
+
+}
+
+
 //调试用
 void graph::show() {
 	for (int i = 0; i < number; i++) {
@@ -709,3 +716,5 @@ void graph::tiaoshi() {
 		}
 	}
 }
+
+

@@ -13,4 +13,3 @@ int main() {
 	mygraph.optimal2();
 	return 0;
 }
-

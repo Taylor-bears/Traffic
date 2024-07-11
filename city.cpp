@@ -7,6 +7,8 @@
 
 using namespace std;
 
+const int INF = 0x3f3f3f3f;
+
 //补充头文件中的city构造函数
 city::city(const string& file_path) {
 	ifstream input(file_path); //后面主函数中实参应为"city.txt"
@@ -61,6 +63,37 @@ city::city(const string& file_path) {
         }*/
 
         // this->distance_map.find(make_pair("BeiJing", "ShangHai"))->second; 如果要查找两城市间距离，就用这个方法
+
+
+
+        int number = name.size();
+        //下面是初始化距离矩阵
+        dist.resize(number, vector<int>(number,INF));
+        for (int i = 0; i < number; i++) {
+            for (int j = 0; j < number; j++) {
+                if (i == j) {
+                    dist[i][j] = 0;
+                }
+                else {
+                    auto it = distance_map.find({ name[i], name[j] });
+                    if (it != distance_map.end()) {
+                        dist[i][j] = it->second;
+                    }
+                }
+            }
+        }
+
+        //解决问题的关键：使用 Floyd-Warshall 算法来计算传递闭包
+        for (int k = 0; k < number; k++) {
+            for (int i = 0; i < number; i++) {
+                for (int j = 0; j < number; j++) {
+                    if (dist[i][k] != INF && dist[k][j] != INF && dist[i][k] + dist[k][j] < dist[i][j]) {
+                        dist[i][j] = dist[i][k] + dist[k][j];
+                    }
+                }
+            }
+        }
+
         input.close(); //关闭文件
     }
     else {
