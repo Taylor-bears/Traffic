@@ -13,9 +13,9 @@ public:
 	times();//Ä¬ÈÏ¹¹Ôì	
 	times(int, int, int);
 	void set(int, int, int);
+	void addMinutes(int minutes);
 	times& operator =(const times& t); 
 	bool operator<(const times& t) const;
-	void addMinutes(int minutes);
 	times operator+(const times& t) const;
 	bool operator>(const times& t) const;
 	bool operator==(const times& other) const;
