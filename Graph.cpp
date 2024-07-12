@@ -409,6 +409,84 @@ void graph::Money_Dijkstra(int v, int n, times current_time, string type) {
 }
 
 
+//得到限制时间下的最省钱路径
+vehicle graph::getminmoney_limit(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name, int extra_hour) {
+	int minMoney = INF;
+	vehicle minVehicle;
+	for (auto& v : ve) {
+		if (v.type != type) continue; // 确保交通工具类型匹配
+
+		times adjusted_time;
+		adjusted_time = current_time; // 调整后的到达时间
+
+		// 如果有上一次的交通工具，并且名称不同，则根据类型添加等待时间
+		if (!last_vehicle_name.empty() && v.name != last_vehicle_name) {
+			int wait_time = (type == "fly") ? 120 : 60; // 飞机换乘等待2小时，火车换乘等待1小时(换算为分钟)
+			adjusted_time.addMinutes(wait_time);
+		}
+
+		if (last_vehicle_name.empty()) {
+			times max_time = current_time;
+			max_time.addMinutes(extra_hour * 60);
+			if (adjusted_time > v.time1 || v.time1 > max_time) continue;
+		}
+
+		// 如果当前时间晚于调整后的出发时间，跳过这个交通工具
+		else if (adjusted_time > v.time1) continue;
+
+
+		// 计算到达时间，如果这是目前为止找到的最快路径，更新minTime和minVehicle
+		int k;
+		k = v.money;
+		if (k < minMoney) {
+			minMoney = k;
+			minVehicle = v;
+		}
+	}
+	return minVehicle;
+}
+
+
+//得到限制时间下的最省钱路径，配合上一个算法
+void graph::Money_Dijkstra_limit(int v, int n, times current_time, string type, int extra_hour) {
+	vector<bool> visited(number, false);
+	vector<times> dist(number, times(INF, INF, INF));
+	vector<PathStep> path(number); // 使用PathStep替换之前的prev数组
+	dist[v] = current_time;
+
+	for (int i = 0; i < number; ++i) {
+		int u = -1;
+		times minTime(INF, INF, INF);
+		for (int j = 0; j < number; j++) {
+			if (!visited[j] && dist[j] < minTime) {
+				u = j;
+				minTime = dist[j];
+			}
+		}
+
+		if (u == -1) break;
+		visited[u] = true;
+
+		for (int j = 0; j < edges[u].size(); j++) {
+			for (auto& v : edges[u][j]) {
+				if (v.type != type) continue;
+				vehicle minVeh = getminmoney_limit(edges[u][j], dist[u], type, path[u].veh.name, extra_hour); // 使用getminmoney函数找出费用最便宜的交通工具
+				if (minVeh.name.empty()) continue; // 如果没有合适的交通工具，跳过
+
+				times arrivalTime;
+				arrivalTime = minVeh.time2;
+				if (dist[u] < arrivalTime && arrivalTime < dist[j]) {
+					dist[j] = arrivalTime;
+					path[j] = PathStep(u, minVeh); // 存储前一个节点和使用的交通工具信息
+				}
+			}
+		}
+	}
+
+	display(dist, path, visited, v, n, type);
+}
+
+
 //可换工具（费用最少）
 vehicle graph::getminmoney2(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name) {
 	int minMoney = INF;
@@ -477,11 +555,88 @@ void graph::Money_Dijkstra2(int v, int n, times current_time) {
 }
 
 
+//限制时间条件下
+vehicle graph::getminmoney2_limit(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name, int extra_hour) {
+	int minMoney = INF;
+	vehicle minVehicle;
+	//这里不跳过类型不同的了，但仍然需要记录类型，因为类型决定了中转的时间
+	for (auto& v : ve) {
+		times adjusted_time;
+		adjusted_time = current_time; // 调整后的到达时间
+
+		// 如果有上一次的交通工具，并且名称不同，则根据类型添加等待时间
+		if (!last_vehicle_name.empty() && v.name != last_vehicle_name) {
+			int wait_time = (last_vehicle_type == "fly") ? 120 : 60; // 飞机换乘等待2小时，火车换乘等待1小时(换算为分钟)
+			adjusted_time.addMinutes(wait_time);
+		}
+
+		if (last_vehicle_name.empty()) {
+			times max_time = current_time;
+			max_time.addMinutes(extra_hour * 60);
+			if (adjusted_time > v.time1 || v.time1 > max_time) continue;
+		}
+
+		// 如果当前时间晚于调整后的出发时间，跳过这个交通工具
+		if (adjusted_time > v.time1) continue;
+
+		// 计算到达时间，如果这是目前为止找到的最快路径，更新minTime和minVehicle
+		int k;
+		k = v.money;
+		if (k < minMoney) {
+			minMoney = k;
+			minVehicle = v;
+		}
+	}
+	return minVehicle;
+}
+
+
+//限制时间条件下，配合上一算法
+void graph::Money_Dijkstra2_limit(int v, int n, times current_time,int extra_time) {
+	vector<bool> visited(number, false);
+	vector<times> dist(number, times(INF, INF, INF));
+	vector<PathStep> path(number); // 使用PathStep替换之前的prev数组
+	dist[v] = current_time;
+
+	for (int i = 0; i < number; i++) {
+		int u = -1;
+		times minTime(INF, INF, INF);
+		for (int j = 0; j < number; j++) {
+			if (!visited[j] && dist[j] < minTime) {
+				u = j;
+				minTime = dist[j];
+			}
+		}
+
+		if (u == -1) break;
+		visited[u] = true;
+
+		for (int j = 0; j < edges[u].size(); j++) {
+			for (auto& v : edges[u][j]) {
+				vehicle minVeh = getminmoney2_limit(edges[u][j], dist[u], path[u].veh.type, path[u].veh.name, extra_time);
+				if (minVeh.name.empty()) continue; // 如果没有合适的交通工具，跳过
+
+				times arrivalTime;
+				arrivalTime = minVeh.time2;
+				if (dist[u] < arrivalTime && arrivalTime < dist[j]) {
+					dist[j] = arrivalTime;
+					path[j] = PathStep(u, minVeh); // 存储前一个节点和使用的交通工具信息
+				}
+			}
+		}
+	}
+
+	display2(dist, path, visited, v, n);
+}
+
+
+
+//公共展示
 void graph::display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n, string type) {
 	cout << "Path from " << mycity.name[v] << " to " << mycity.name[n] << ":" << endl;
 	int current = n;
 	stack<vehicle> reversePath; // 使用vehicle来存储完整的交通工具信息
-	vector<string> cities; // 存储经过的城市名称
+	stack<string> cities; // 存储经过的城市名称
 
 	while (current != v) {
 		if (current == -1) {
@@ -489,28 +644,28 @@ void graph::display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S
 			return;
 		}
 		reversePath.push(path[current].veh);
-		cities.push_back(mycity.name[current]); // 记录经过的城市
+		cities.push(mycity.name[current]); // 记录经过的城市
 		current = path[current].prev;
 	}
-	cities.push_back(mycity.name[v]); // 添加起始城市
+	cities.push(mycity.name[v]); // 添加起始城市
 
 	// 输出路径信息
-	string startCity = cities.back();
-	cities.pop_back(); // 弹出起始城市
+	string startCity = cities.top();
+	cities.pop(); // 弹出起始城市
 
 	while (!reversePath.empty()) {
 		vehicle veh = reversePath.top();
 		reversePath.pop();
 
-		cout << "从" << startCity << "出发, 到" << cities.back() << ", 类型："
+		cout << "从" << startCity << "出发, 到" << cities.top() << ", 类型："
 			<< veh.type << ", 编号：" << veh.name << ", 在7月"
 			<< veh.time1.day << "号" << veh.time1.hour << "点" << veh.time1.minute << "分出发，耗时"
 			<< veh.consume << "小时，预估7月" << veh.time2.day << "号" << veh.time2.hour << "点" <<
 			veh.time2.minute << "分到达，费用：" << veh.money << "元" << endl;
 
 
-		startCity = cities.back(); // 更新起始城市为当前到达城市
-		cities.pop_back(); // 弹出已经输出的城市
+		startCity = cities.top(); // 更新起始城市为当前到达城市
+		cities.pop(); // 弹出已经输出的城市
 	}
 }
 
@@ -598,6 +753,74 @@ void graph::findBestPath2(int start, int end, const times& preset_time, const st
 	times current_time = preset_time;
 
 	DFS2(start, end, type, "", path, current_time, bestPath, bestTime, cheapestCost);
+
+	cout << "Cheapest Path from " << mycity.name[start] << " to " << mycity.name[end] << " starting after preset time:" << endl;
+	if (bestPath.empty()) {
+		cout << "No path found." << endl;
+		return;
+	}
+	for (auto& step : bestPath) {
+		cout << "从" << mycity.name[step.prev] << "出发, 到" << mycity.name[step.next]
+			<< ", 类型: " << step.veh.type << ", 编号:" << step.veh.name << ", 在7月"
+			<< step.veh.time1.day << "号" << step.veh.time1.hour << "点" << step.veh.time1.minute
+			<< "分出发，耗时" << step.veh.consume << "小时，预估7月" << step.veh.time2.day << "号"
+			<< step.veh.time2.hour << "点" << step.veh.time2.minute << "分到达，费用：" << step.veh.money << "元" << endl;
+	}
+}
+
+
+//可限制时间
+void graph::DFS2_limit(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
+	times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost,int extra_hour) {
+	if (v == end) { //费用不同于时间在于，需要将金钱不断地累加，得到最后的总金额才能比较
+		//而时间只需要比较最后一趟的到达时间便可知道哪种最快
+		double currentCost = 0;
+		for (auto& step : path) {
+			currentCost += step.veh.money;
+		}
+
+		if (currentCost < cheapestCost || cheapestCost == INF) {
+			cheapestCost = currentCost;
+			bestTime = current_time;
+			bestPath = path;
+		}
+		return;
+	}
+
+	for (int j = 0; j < edges[v].size(); j++) {
+		for (auto& veh : edges[v][j]) {
+			if (veh.type != type) continue;
+			if (!path.empty() && vehicleName != "" && veh.name != vehicleName) continue;
+
+			times max_time = current_time;
+
+			if (path.empty()) {
+				max_time.addMinutes(extra_hour * 60);
+			}
+
+			if (current_time < veh.time1 || (path.empty()&& veh.time1 < max_time)) {
+					times arrivalTime;
+					arrivalTime = veh.time2;
+					path.push_back(PathStep3(v, j, veh));
+					string nextVehicleName = vehicleName == "" ? veh.name : vehicleName;
+					DFS2(j, end, type, nextVehicleName, path, arrivalTime, bestPath, bestTime, cheapestCost);
+					path.pop_back();
+			}
+		}
+	}
+}
+
+
+//可限制时间（对应上一函数）
+void graph::findBestPath2_limit(int start, int end, const times& preset_time, const string& type, int extra_hour) {
+	vector<PathStep3> bestPath;
+	times bestTime(INF, INF, INF);
+	double cheapestCost = INF;
+
+	vector<PathStep3> path;
+	times current_time = preset_time;
+
+	DFS2_limit(start, end, type, "", path, current_time, bestPath, bestTime, cheapestCost, extra_hour);
 
 	cout << "Cheapest Path from " << mycity.name[start] << " to " << mycity.name[end] << " starting after preset time:" << endl;
 	if (bestPath.empty()) {
@@ -716,5 +939,3 @@ void graph::tiaoshi() {
 		}
 	}
 }
-
-

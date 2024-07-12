@@ -58,16 +58,26 @@ public:
 
 
 	//显示最少费用的情况
-	//不可换工具
+	//不可换工具（第一种是之后的最省钱，第二种是范围内的最省钱）
 	vehicle getminmoney(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name);
 	void Money_Dijkstra(int v, int n, times current_time, string type);
-	//可换工具
+	//可限制时间
+	vehicle getminmoney_limit(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name, int extra_hour);
+	void Money_Dijkstra_limit(int v, int n, times current_time, string type, int extra_hour);
+	//可换工具（第一种是之后的最省钱，第二种是范围内的最省钱）
 	vehicle getminmoney2(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name);
 	void Money_Dijkstra2(int v, int n, times current_time);
-	//直达
+	//可限制时间
+	vehicle getminmoney2_limit(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name, int extra_hour);
+	void Money_Dijkstra2_limit(int v, int n, times current_time, int extra_time);
+	//直达（第一种是之后的最省钱，第二种是范围内的最省钱）
 	void DFS2(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
 		times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost);
 	void findBestPath2(int start, int end, const times& preset_time, const string& type);
+	//可限制时间
+	void DFS2_limit(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
+		times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost, int extra_time);
+	void findBestPath2_limit(int start, int end, const times& preset_time, const string& type, int extra_hour);
 
 
 	//公共显示功能

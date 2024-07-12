@@ -10,6 +10,6 @@ using namespace std;
 
 int main() {
 	graph mygraph("city.txt","vehicle.txt");
-	mygraph.optimal2();
+	mygraph.optimal();
 	return 0;
 }
