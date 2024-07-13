@@ -43,6 +43,7 @@ public:
 	double time_transfer(int hour, int minute);//时间转换函数的申明
 
 
+
 	//显示最快时间的情况
 	//不可换工具
 	vehicle getmin(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name);
@@ -62,32 +63,43 @@ public:
 	vehicle getminmoney(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name);
 	void Money_Dijkstra(int v, int n, times current_time, string type);
 	//可限制时间
-	vehicle getminmoney_limit(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name, int extra_hour);
-	void Money_Dijkstra_limit(int v, int n, times current_time, string type, int extra_hour);
+	vehicle getminmoney_limit(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name, int extra_day);
+	void Money_Dijkstra_limit(int v, int n, times current_time, string type, int extra_day);
 	//可换工具（第一种是之后的最省钱，第二种是范围内的最省钱）
 	vehicle getminmoney2(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name);
 	void Money_Dijkstra2(int v, int n, times current_time);
 	//可限制时间
-	vehicle getminmoney2_limit(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name, int extra_hour);
-	void Money_Dijkstra2_limit(int v, int n, times current_time, int extra_time);
+	vehicle getminmoney2_limit(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name, int extra_day);
+	void Money_Dijkstra2_limit(int v, int n, times current_time, int extra_day);
 	//直达（第一种是之后的最省钱，第二种是范围内的最省钱）
 	void DFS2(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
 		times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost);
 	void findBestPath2(int start, int end, const times& preset_time, const string& type);
 	//可限制时间
 	void DFS2_limit(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
-		times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost, int extra_time);
-	void findBestPath2_limit(int start, int end, const times& preset_time, const string& type, int extra_hour);
+		times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost, int extra_day);
+	void findBestPath2_limit(int start, int end, const times& preset_time, const string& type, int extra_day);
+
 
 
 	//公共显示功能
 	//不可换工具
 	void display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n, string type);
-	//可换工具
-	void display2(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n);
+	
+
+
+	//说明：直达的情况，有没有type限制是没有意义的，因为前后都是固定一种类型
 	//公共调用功能
-	void optimal();//得到最优方案
-	void optimal2();
+	void optimal();//找最快路径（有type限制）
+	void optimal_money();//找最省钱路径（有type限制）
+	void optimal_notype();//找最快路径（无type限制）
+	void optimal_money_notype();//找最省钱路径（无type限制）
+	void optimal_money_limit();//找最省钱路径（有type、time限制）
+	void optimal_money_notype_limit();//找最省钱路径（无type限制、有time限制）
+	void optimal_DFS();
+	void optimal_DFS_money();
+	void optimal_DFS_money_limit();
+
 
 
 	//调试功能

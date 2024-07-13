@@ -275,7 +275,7 @@ void graph::Time_Dijkstra2(int v, int n, times current_time) {
 		}
 	}
 
-	display2(dist, path, visited, v, n);
+	display(dist, path, visited, v, n, "");
 }
 
 
@@ -410,7 +410,7 @@ void graph::Money_Dijkstra(int v, int n, times current_time, string type) {
 
 
 //得到限制时间下的最省钱路径
-vehicle graph::getminmoney_limit(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name, int extra_hour) {
+vehicle graph::getminmoney_limit(vector<vehicle>& ve, times current_time, string type, string last_vehicle_name, int extra_day) {
 	int minMoney = INF;
 	vehicle minVehicle;
 	for (auto& v : ve) {
@@ -427,7 +427,7 @@ vehicle graph::getminmoney_limit(vector<vehicle>& ve, times current_time, string
 
 		if (last_vehicle_name.empty()) {
 			times max_time = current_time;
-			max_time.addMinutes(extra_hour * 60);
+			max_time.addMinutes(extra_day * 24 * 60);
 			if (adjusted_time > v.time1 || v.time1 > max_time) continue;
 		}
 
@@ -551,12 +551,12 @@ void graph::Money_Dijkstra2(int v, int n, times current_time) {
 		}
 	}
 
-	display2(dist, path, visited, v, n);
+	display(dist, path, visited, v, n, "");
 }
 
 
 //限制时间条件下
-vehicle graph::getminmoney2_limit(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name, int extra_hour) {
+vehicle graph::getminmoney2_limit(vector<vehicle>& ve, times current_time, string last_vehicle_type, string last_vehicle_name, int extra_day) {
 	int minMoney = INF;
 	vehicle minVehicle;
 	//这里不跳过类型不同的了，但仍然需要记录类型，因为类型决定了中转的时间
@@ -572,7 +572,7 @@ vehicle graph::getminmoney2_limit(vector<vehicle>& ve, times current_time, strin
 
 		if (last_vehicle_name.empty()) {
 			times max_time = current_time;
-			max_time.addMinutes(extra_hour * 60);
+			max_time.addMinutes(extra_day * 24 * 60);
 			if (adjusted_time > v.time1 || v.time1 > max_time) continue;
 		}
 
@@ -626,7 +626,7 @@ void graph::Money_Dijkstra2_limit(int v, int n, times current_time,int extra_tim
 		}
 	}
 
-	display2(dist, path, visited, v, n);
+	display(dist, path, visited, v, n, "");
 }
 
 
@@ -666,44 +666,6 @@ void graph::display(vector<times>& dist, vector<PathStep>& path, vector<bool>& S
 
 		startCity = cities.top(); // 更新起始城市为当前到达城市
 		cities.pop(); // 弹出已经输出的城市
-	}
-}
-
-
-void graph::display2(vector<times>& dist, vector<PathStep>& path, vector<bool>& S, int v, int n) {
-	cout << "Path from " << mycity.name[v] << " to " << mycity.name[n] << ":" << endl;
-	int current = n;
-	stack<vehicle> reversePath; // 使用vehicle来存储完整的交通工具信息
-	vector<string> cities; // 存储经过的城市名称
-
-	while (current != v) {
-		if (current == -1) {
-			cout << "No path found." << endl;
-			return;
-		}
-		reversePath.push(path[current].veh);
-		cities.push_back(mycity.name[current]); // 记录经过的城市
-		current = path[current].prev;
-	}
-	cities.push_back(mycity.name[v]); // 添加起始城市
-
-	// 输出路径信息
-	string startCity = cities.back();
-	cities.pop_back(); // 弹出起始城市
-
-	while (!reversePath.empty()) {
-		vehicle veh = reversePath.top();
-		reversePath.pop();
-
-		cout << "从" << startCity << "出发, 到" << cities.back() << ", 类型："
-			<< veh.type << ", 编号：" << veh.name << ", 在7月"
-			<< veh.time1.day << "号" << veh.time1.hour << "点" << veh.time1.minute << "分出发，耗时"
-			<< veh.consume << "小时，预估7月" << veh.time2.day << "号" << veh.time2.hour << "点" <<
-			veh.time2.minute << "分到达，费用：" << veh.money << "元" << endl;
-
-
-		startCity = cities.back(); // 更新起始城市为当前到达城市
-		cities.pop_back(); // 弹出已经输出的城市
 	}
 }
 
@@ -771,7 +733,7 @@ void graph::findBestPath2(int start, int end, const times& preset_time, const st
 
 //可限制时间
 void graph::DFS2_limit(int v, int end, const string& type, const string& vehicleName, vector<PathStep3>& path,
-	times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost,int extra_hour) {
+	times& current_time, vector<PathStep3>& bestPath, times& bestTime, double& cheapestCost,int extra_day) {
 	if (v == end) { //费用不同于时间在于，需要将金钱不断地累加，得到最后的总金额才能比较
 		//而时间只需要比较最后一趟的到达时间便可知道哪种最快
 		double currentCost = 0;
@@ -795,7 +757,7 @@ void graph::DFS2_limit(int v, int end, const string& type, const string& vehicle
 			times max_time = current_time;
 
 			if (path.empty()) {
-				max_time.addMinutes(extra_hour * 60);
+				max_time.addMinutes(extra_day * 24 * 60);
 			}
 
 			if (current_time < veh.time1 || (path.empty()&& veh.time1 < max_time)) {
@@ -812,7 +774,7 @@ void graph::DFS2_limit(int v, int end, const string& type, const string& vehicle
 
 
 //可限制时间（对应上一函数）
-void graph::findBestPath2_limit(int start, int end, const times& preset_time, const string& type, int extra_hour) {
+void graph::findBestPath2_limit(int start, int end, const times& preset_time, const string& type, int extra_day) {
 	vector<PathStep3> bestPath;
 	times bestTime(INF, INF, INF);
 	double cheapestCost = INF;
@@ -820,7 +782,7 @@ void graph::findBestPath2_limit(int start, int end, const times& preset_time, co
 	vector<PathStep3> path;
 	times current_time = preset_time;
 
-	DFS2_limit(start, end, type, "", path, current_time, bestPath, bestTime, cheapestCost, extra_hour);
+	DFS2_limit(start, end, type, "", path, current_time, bestPath, bestTime, cheapestCost, extra_day);
 
 	cout << "Cheapest Path from " << mycity.name[start] << " to " << mycity.name[end] << " starting after preset time:" << endl;
 	if (bestPath.empty()) {
@@ -837,7 +799,8 @@ void graph::findBestPath2_limit(int start, int end, const times& preset_time, co
 }
 
 
-//最优方案定义
+//有type限制最优方案定义
+//最快有type限制路径 Time_Dijkstra
 void graph::optimal() {
 	string city_name1, city_name2, transport_type;
 	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
@@ -868,12 +831,183 @@ void graph::optimal() {
 		return;
 	}
 
-	cout << "计算" << (transport_type == "train" ? "火车" : "飞机") << "的最优路径..." << endl;
+	cout << "计算" << (transport_type == "train" ? "火车" : "飞机") << "的最快路径..." << endl;
+	cout << "在途中不可以更换交通工具类型下，您的最快路径如下" << endl;
 	Time_Dijkstra(start, destination, currentTime, transport_type);
 }
 
 
-void graph::optimal2() {
+//最省钱有type限制路径 Money_Dijkstra
+void graph::optimal_money() {
+	string city_name1, city_name2, transport_type;
+	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
+	cout << "请输入出发地：" << endl;
+	cin >> city_name1;
+	cout << "请输入目的地：" << endl;
+	cin >> city_name2;
+
+	if (traffic_map.find(city_name1) == traffic_map.end() || traffic_map.find(city_name2) == traffic_map.end()) {
+		cout << "输入的城市不存在，请重新输入。" << endl;
+		return;
+	}
+
+	int start = traffic_map[city_name1];
+	int destination = traffic_map[city_name2];
+
+	int day, hour, minute;
+	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6号15点30分）：" << endl;
+	cin >> day >> hour >> minute;
+
+	times currentTime(day, hour, minute);
+
+	cout << "请选择交通工具类型（train/fly）：" << endl;
+	cin >> transport_type;
+
+	if (transport_type != "train" && transport_type != "fly") {
+		cout << "输入的交通工具类型不正确，请重新输入。" << endl;
+		return;
+	}
+
+	cout << "计算" << (transport_type == "train" ? "火车" : "飞机") << "的最省钱路径..." << endl;
+	cout << "在途中不可以更换交通工具类型下，您的最省钱路径如下" << endl;
+	Money_Dijkstra(start, destination, currentTime, transport_type);
+}
+
+
+//无type限制最优方案定义
+//最快无type限制路径 Time_Dijkstra2
+void graph::optimal_notype() {
+	string city_name1, city_name2;
+	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
+	cout << "请输入出发地：" << endl;
+	cin >> city_name1;
+	cout << "请输入目的地：" << endl;
+	cin >> city_name2;
+
+	if (traffic_map.find(city_name1) == traffic_map.end() || traffic_map.find(city_name2) == traffic_map.end()) {
+		cout << "输入的城市不存在，请重新输入。" << endl;
+		return;
+	}
+
+	int start = traffic_map[city_name1];
+	int destination = traffic_map[city_name2];
+
+	int day, hour, minute;
+	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6号15点30分）：" << endl;
+	cin >> day >> hour >> minute;
+
+	times currentTime(day, hour, minute);
+
+	cout << "计算最快路径..." << endl;
+	cout << "在途中可以更换交通工具类型下，您的最快路径如下" << endl;
+	Time_Dijkstra2(start, destination, currentTime);
+}
+
+
+//最快无type限制路径 Money_Dijkstra2
+void graph::optimal_money_notype() {
+	string city_name1, city_name2;
+	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
+	cout << "请输入出发地：" << endl;
+	cin >> city_name1;
+	cout << "请输入目的地：" << endl;
+	cin >> city_name2;
+
+	if (traffic_map.find(city_name1) == traffic_map.end() || traffic_map.find(city_name2) == traffic_map.end()) {
+		cout << "输入的城市不存在，请重新输入。" << endl;
+		return;
+	}
+
+	int start = traffic_map[city_name1];
+	int destination = traffic_map[city_name2];
+
+	int day, hour, minute;
+	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6号15点30分）：" << endl;
+	cin >> day >> hour >> minute;
+
+	times currentTime(day, hour, minute);
+
+	cout << "计算最省钱路径..." << endl;
+	cout << "在途中可以更换交通工具类型下，您的最省钱路径如下" << endl;
+	Money_Dijkstra2(start, destination, currentTime);
+}
+
+
+//最省钱有type限制有time限制路径 Money_Dijkstra_limit
+void graph::optimal_money_limit() {
+	string city_name1, city_name2, transport_type;
+	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
+	cout << "请输入出发地：" << endl;
+	cin >> city_name1;
+	cout << "请输入目的地：" << endl;
+	cin >> city_name2;
+
+	if (traffic_map.find(city_name1) == traffic_map.end() || traffic_map.find(city_name2) == traffic_map.end()) {
+		cout << "输入的城市不存在，请重新输入。" << endl;
+		return;
+	}
+
+	int start = traffic_map[city_name1];
+	int destination = traffic_map[city_name2];
+	int extra_day;
+
+	int day, hour, minute;
+	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6号15点30分）：" << endl;
+	cin >> day >> hour >> minute;
+	cout << "请输入限制天数" << endl;
+	cin >> extra_day;
+
+	times currentTime(day, hour, minute);
+
+	cout << "请选择交通工具类型（train/fly）：" << endl;
+	cin >> transport_type;
+
+	if (transport_type != "train" && transport_type != "fly") {
+		cout << "输入的交通工具类型不正确，请重新输入。" << endl;
+		return;
+	}
+
+	cout << "计算" << (transport_type == "train" ? "火车" : "飞机") << "的最省钱路径..." << endl;
+	cout << "在途中不可以更换交通工具类型下，您的最省钱路径如下" << endl;
+	Money_Dijkstra_limit(start, destination, currentTime, transport_type, extra_day);
+}
+
+
+//最省钱无type限制有time限制路径 Money_Dijkstra2_limit
+void graph::optimal_money_notype_limit() {
+	string city_name1, city_name2, transport_type;
+	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
+	cout << "请输入出发地：" << endl;
+	cin >> city_name1;
+	cout << "请输入目的地：" << endl;
+	cin >> city_name2;
+
+	if (traffic_map.find(city_name1) == traffic_map.end() || traffic_map.find(city_name2) == traffic_map.end()) {
+		cout << "输入的城市不存在，请重新输入。" << endl;
+		return;
+	}
+
+	int start = traffic_map[city_name1];
+	int destination = traffic_map[city_name2];
+	int extra_day;
+
+	int day, hour, minute;
+	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6号15点30分）：" << endl;
+	cin >> day >> hour >> minute;
+	cout << "请输入限制天数" << endl;
+	cin >> extra_day;
+
+	times currentTime(day, hour, minute);
+
+	cout << "计算最省钱路径..." << endl;
+	cout << "在途中不可以更换交通工具类型下，您的最省钱路径如下" << endl;
+	Money_Dijkstra2_limit(start, destination, currentTime, extra_day);
+}
+
+
+//直达
+//最快直达路径 findBestPath
+void graph::optimal_DFS() {
 	string city_name1, city_name2, transport_type;
 	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
 	cout << "请输入出发地：" << endl;
@@ -899,14 +1033,75 @@ void graph::optimal2() {
 	times currentTime(day, hour, minute);
 
 	cout << "计算" << (transport_type == "train" ? "火车" : "飞机") << "的最优路径..." << endl;
+	cout << "在直达下，您的最快路径如下" << endl;
 	findBestPath(start, destination, currentTime, transport_type);
 }
 
 
+//最省钱直达路径 findBestPath2
+void graph::optimal_DFS_money() {
+	string city_name1, city_name2, transport_type;
+	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
+	cout << "请输入出发地：" << endl;
+	cin >> city_name1;
+	cout << "请输入目的地：" << endl;
+	cin >> city_name2;
 
-//自驾情况
-void selfdrive() {
+	if (traffic_map.find(city_name1) == traffic_map.end() || traffic_map.find(city_name2) == traffic_map.end()) {
+		cout << "输入的城市不存在，请重新输入。" << endl;
+		return;
+	}
 
+	int start = traffic_map[city_name1];
+	int destination = traffic_map[city_name2];
+
+	int day, hour, minute;
+	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6号15点30分）：" << endl;
+	cin >> day >> hour >> minute;
+
+	cout << "请选择交通工具类型（train/fly）：" << endl;
+	cin >> transport_type;
+
+	times currentTime(day, hour, minute);
+
+	cout << "计算" << (transport_type == "train" ? "火车" : "飞机") << "的最优路径..." << endl;
+	cout << "在直达下，您的最省钱路径如下" << endl;
+	findBestPath2(start, destination, currentTime, transport_type);
+}
+
+
+//最省钱有time限制直达路径 findBestPath2_limit
+void graph::optimal_DFS_money_limit() {
+	string city_name1, city_name2, transport_type;
+	cout << "请输入您的出发地与目的地（地点的格式：北京 Beijing）：" << endl;
+	cout << "请输入出发地：" << endl;
+	cin >> city_name1;
+	cout << "请输入目的地：" << endl;
+	cin >> city_name2;
+
+	if (traffic_map.find(city_name1) == traffic_map.end() || traffic_map.find(city_name2) == traffic_map.end()) {
+		cout << "输入的城市不存在，请重新输入。" << endl;
+		return;
+	}
+
+	int start = traffic_map[city_name1];
+	int destination = traffic_map[city_name2];
+	int extra_day;
+
+	int day, hour, minute;
+	cout << "请输入出发时间（日 时 分，例如 6 15 30表示本月的6号15点30分）：" << endl;
+	cin >> day >> hour >> minute;
+
+	cout << "请选择交通工具类型（train/fly）：" << endl;
+	cin >> transport_type;
+
+	times currentTime(day, hour, minute);
+	cout << "请输入限制天数" << endl;
+	cin >> extra_day;
+
+	cout << "计算" << (transport_type == "train" ? "火车" : "飞机") << "的最优路径..." << endl;
+	cout << "在直达下，您的最省钱路径如下" << endl;
+	findBestPath2_limit(start, destination, currentTime, transport_type, extra_day);
 }
 
 
