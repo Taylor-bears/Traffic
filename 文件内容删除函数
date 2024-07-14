@@ -1,0 +1,82 @@
+void deletetext1()
+{
+	string filename = "城市距离.txt";
+    string target;
+    ifstream infile;
+
+    while (true) {
+        cout << "请输入要删除的内容：" << endl;
+        getline(cin, target);
+
+        infile.open(filename);
+        
+
+        ostringstream tempStream;
+        tempStream << infile.rdbuf();
+        string fileContents = tempStream.str();
+        infile.close();
+
+        // 检查文件是否包含目标内容
+        if (fileContents.find(target) == string::npos) {
+            cout << "文件不包含指定内容，请重新输入。" << endl;
+        }
+        else {
+            // 删除目标内容
+            size_t pos;
+            while ((pos = fileContents.find(target)) != string::npos) {
+                fileContents.erase(pos, target.length());
+            }
+
+            ofstream outfile(filename);
+            
+
+            outfile << fileContents;
+            outfile.close();
+
+            cout << "指定内容已删除。" << endl;
+            break;
+        }
+
+}
+void deletetext2()
+{
+	string filename = "vehicle.txt";
+    string target;
+    ifstream infile;
+
+    while (true) {
+        cout << "请输入要删除的内容：" << endl;
+        getline(cin, target);
+
+        infile.open(filename);
+        
+
+        ostringstream tempStream;
+        tempStream << infile.rdbuf();
+        string fileContents = tempStream.str();
+        infile.close();
+
+        // 检查文件是否包含目标内容
+        if (fileContents.find(target) == string::npos) {
+            cout << "文件不包含指定内容，请重新输入。" << endl;
+        }
+        else {
+            // 删除目标内容
+            size_t pos;
+            while ((pos = fileContents.find(target)) != string::npos) {
+                fileContents.erase(pos, target.length());
+            }
+
+            ofstream outfile(filename);
+            
+
+            outfile << fileContents;
+            outfile.close();
+
+            cout << "指定内容已删除。" << endl;
+            break;
+        }
+
+}
+
+
