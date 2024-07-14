@@ -91,14 +91,23 @@ public:
 	//说明：直达的情况，有没有type限制是没有意义的，因为前后都是固定一种类型
 	//公共调用功能
 	void optimal();//找最快路径（有type限制）
+	void optimal( string city1, string city2, string transport_type, int day, int hour, int minute);
 	void optimal_money();//找最省钱路径（有type限制）
+	void optimal_money( string city1, string city2, string transport_type, int day, int hour, int minute);
 	void optimal_notype();//找最快路径（无type限制）
+	void optimal_notype( string city1, string city2, int day, int hour, int minute);
 	void optimal_money_notype();//找最省钱路径（无type限制）
+	void optimal_money_notype( string city1, string city2, int day, int hour, int minute);
 	void optimal_money_limit();//找最省钱路径（有type、time限制）
+	void optimal_money_limit(string city1, string city2, int day, int hour, int minute, string transport_type, int extra_day);
 	void optimal_money_notype_limit();//找最省钱路径（无type限制、有time限制）
-	void optimal_DFS();
-	void optimal_DFS_money();
-	void optimal_DFS_money_limit();
+	void optimal_money_notype_limit(string city1, string city2, int day, int hour, int minute, int extra_day);
+	void optimal_DFS();//找直通最快路径
+	void optimal_DFS( string city1, string city2, string transport_type, int day, int hour, int minute);
+	void optimal_DFS_money();//找直通最省钱路径
+	void optimal_DFS_money( string city1, string city2, string transport_type, int day, int hour, int minute);
+	void optimal_DFS_money_limit();//找直通最省钱路径（有time限制）
+	void optimal_DFS_money_limit( string city1, string city2, int day, int hour, int minute, string transport_type, int extra_day);
 
 
 
@@ -106,6 +115,13 @@ public:
 	void show();
 	void tiaoshi();
 	bool timecheck(times time1, times time2, int wait_hours);
+
+
+
+	//查询功能
+	void find_city();
+	void find_vehicle();
+	void find_vehicle_limit();
 };
 
 
