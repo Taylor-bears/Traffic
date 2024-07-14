@@ -1,7 +1,7 @@
 (Beijing,Nanjing),train,G117,6.09:20,4:24,6.13:44,504
 (Nanjing,Shanghai),train,G117,6.13:46,1:09,6.14:55,153
 (Beijing,Nanjing),train,G145,6.14:14,4:37,6.18:51,464
-(Nanjing,Shanghai),train,G145,6.18:56,1:16,6.20:12,141
+(Nanjing,Shanghai),train,G145,6.18:56,1:16,6.20:12,1411
 (Beijing,Nanjing),train,G21,6.17:00,3:14,6.20:14,533
 (Nanjing,Shanghai),train,G21,6.20:16,1:02,6.21:08,162
 (Harbin,Changchun),train,K1063,6.15:03,2:47,6.17:50,37.5
@@ -40,7 +40,7 @@
 (Haikou,Guangzhou),train,Z112,6.17:08,13:24,7.6:32,143
 (Guangzhou,Beijing),train,Z112,7.7:32,21:56,8.5:28,251
 (Beijing,Shenyang),train,Z112,8.5:54,6:45,8.12:39,98
-(Shenyang,Changchun),train,Z112,8.12:50,2:32,8.15:22,43.5
+(Shenyang,Changchun),train,Z112,8.12:50,2:32,8.15:22,45
 (Changchun,Harbin),train,Z112,8.15:32,1:56,8.17:28,37.5
 (Haikou,Guangzhou),train,Z502,6.20:20,11:18,7.7:38,143
 (Guangzhou,Changsha),train,Z502,7.8:32,7:40,7.16:12,98
@@ -68,7 +68,7 @@
 (Changchun,Harbin),train,K546,7.6:57,2:43,7.9:40,40.5
 (Xian,Tianjin),train,K1574,6.20:15,16:12,7.12:27,168.5
 (Tianjin,Shenyang),train,K1574,7.12:35,10:24,7.22:59,98
-(Shenyang,Changchun),train,K1574,7.23:15,3:21,8.2:36,43.5
+(Shenyang,Changchun),train,K1574,7.23:15,3:21,8.2:36,55
 (Harbin,Changchun),train,G394,6.7:25,1:06,6.8:31,109.5
 (Changchun,Shenyang),train,G394,6.8:33,1:12,6.9:45,136.5
 (Shenyang,Tianjin),train,G394,6.9:49,4:10,6.13:59,223
