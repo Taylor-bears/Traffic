@@ -18,18 +18,22 @@ void graph_find() {
 	string transport_type;
 	cout << "欢迎使用路径查询系统" << endl;
 	do {
-		cout << "请输入你的出发地与目的地" << endl;
-		string city1, city2;
-		cout << "请输入出发地：" << endl;
-		cin >> city1;
-		cout << "请输入目的地：" << endl;
-		cin >> city2;
-		int day, hour, minute;
-		cout << "请输入开始时间（日 时 分，例如 6 15 30表示本月的6号15点30分）： ";
-		cin >> day >> hour >> minute;
-		cout << "请输入数字选择查询类型" << endl;
-		cout << "输入1查询最快的路径，输入2查询费用最少的路径" << endl;
+		cout << "输入1查询最快的路径，输入2查询费用最少的路径，输入3退出" << endl;
 		cin >> flag;
+		string city1, city2;
+		int day, hour, minute;
+		if (flag == 1 || flag == 2) {
+			cout << "请输入你的出发地与目的地" << endl;
+			
+			cout << "请输入出发地：" << endl;
+			cin >> city1;
+			cout << "请输入目的地：" << endl;
+			cin >> city2;
+			
+			cout << "请输入开始时间（日 时 分，例如 6 15 30表示本月的6号15点30分）： ";
+			cin >> day >> hour >> minute;
+			cout << "请输入数字选择查询类型" << endl;
+		}
 		switch (flag) {
 		case 1:
 			int flag_1;
@@ -171,10 +175,11 @@ void graph_find() {
 			break;
 		default:
 			cout << "输入无效。请重新输入" << endl;
-		} 
-	}while (flag != 3);
+		}
+	} while (flag != 3);
 	return;
 }
+
 
 
 
