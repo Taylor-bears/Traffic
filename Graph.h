@@ -120,6 +120,7 @@ public:
 
 	//²éÑ¯¹¦ÄÜ
 	void find_city();
+	void find_twocity();
 	void find_vehicle();
 	void find_vehicle_limit();
 };

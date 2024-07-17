@@ -1312,17 +1312,67 @@ void graph::tiaoshi() {
 
 //查询城市
 void graph::find_city() {
+	ifstream input("city_pre.txt");
+	string m;
 	cout << "请输入你要查询的城市：" << endl;
 	string city;
 	cin >> city;
 	for (auto k : mycity.name) {
-		if (k == city)
+		if (k == city) {
 			cout << "该城市在文件当中" << endl;
-		else
-			cout << "该城市不在文件当中" << endl;
+			while (input >> m) {
+				if (m != k) {
+					input >> m;
+					input >> m;
+				}
+				else if (m == k)
+					break;
+			}
+			cout << "该城市的详细信息如下" << endl;
+			cout << "城市名：" << m << "，北纬：";
+			input >> m;
+			cout<<m<< "，东经：";
+			input >> m;
+			cout << m << endl;
+		}
 	}
+	int i = 0;
+	for (; i < mycity.name.size(); i++)
+		if (city == mycity.name[i])
+			break;
+	if (i == mycity.name.size())
+		cout << "该城市不在文件当中" << endl;
+	return;
 }
 
+
+void graph::find_twocity() {
+	cout << "请输入你要查询的两个城市：" << endl;
+	string city1, city2;
+	cout << "城市1：";
+	cin >> city1;
+	cout << endl;
+	cout << "城市2：";
+	cin >> city2;
+	cout << endl;
+	int i = 0;
+	for (; i < mycity.name.size(); i++)
+		if (city1 == mycity.name[i])
+			break;
+	if (i == mycity.name.size()) {
+		cout << "该城市不在文件当中" << endl;
+		return;
+	}
+	int j = 0;
+	for (; j < mycity.name.size(); j++)
+		if (city2 == mycity.name[j])
+			break;
+	if (j == mycity.name.size()) {
+		cout << "该城市不在文件当中" << endl;
+		return;
+	}
+	cout << "两个城市间的距离：" << mycity.distance_map[make_pair(city1, city2)] << "km" << endl;
+}
 
 
 //查询交通工具
@@ -1331,22 +1381,28 @@ void graph::find_vehicle() {
 	string city1, city2;
 	cout << "城市1： ";
 	cin >> city1;
+	cout << endl;
 	cout << "城市2： ";
 	cin >> city2;
-	for (auto k : mycity.name) {
-		if (k != city1) {
-			cout << "文件中没有该城市的路径" << endl;
-			return;
-		}
+	cout << endl;
+	int i = 0;
+	for (; i < mycity.name.size(); i++)
+		if (city1 == mycity.name[i])
+			break;
+	if (i == mycity.name.size()) {
+		cout << "该城市不在文件当中" << endl;
+		return;
 	}
-	for (auto m : mycity.name) {
-		if (m != city2) {
-			cout << "文件中没有该城市的路径" << endl;
-			return;
-		}
+	int j = 0;
+	for (; j < mycity.name.size(); j++)
+		if (city2 == mycity.name[j])
+			break;
+	if (j == mycity.name.size()) {
+		cout << "该城市不在文件当中" << endl;
+		return;
 	}
-	int i = traffic_map[city1];
-	int j = traffic_map[city2];
+	i = traffic_map[city1];
+	j = traffic_map[city2];
 	for (auto n : edges[i][j]) {
 		if (n.type != "MAX" && n.type != "") {
 				cout << "从" << city1 << "出发, 到" << city2
@@ -1375,8 +1431,10 @@ void graph::find_vehicle_limit() {
 	cout << "请你输入想要查询的两个城市" << endl;
 	cout << "城市1： ";
 	cin >> city1;
+	cout << endl;
 	cout << "城市2： ";
 	cin >> city2;
+	cout << endl;
 	cout << "请输入你想查询的时间范围" << endl;
 	cout << "开始时间（日 时 分，例如 6 15 30表示本月的6号15点30分）： ";
 	cin >> day1 >> hour1 >> minute1;
@@ -1384,20 +1442,24 @@ void graph::find_vehicle_limit() {
 	cin >> day2 >> hour2 >> minute2;
 	times start(day1, hour1, minute1);
 	times end(day2, hour2, minute2);
-	for (auto k : mycity.name) {
-		if (k != city1) {
-			cout << "文件中没有该城市的路径" << endl;
-			return;
-		}
+	int i = 0;
+	for (; i < mycity.name.size(); i++)
+		if (city1 == mycity.name[i])
+			break;
+	if (i == mycity.name.size()) {
+		cout << "该城市不在文件当中" << endl;
+		return;
 	}
-	for (auto m : mycity.name) {
-		if (m != city2) {
-			cout << "文件中没有该城市的路径" << endl;
-			return;
-		}
+	int j = 0;
+	for (; j < mycity.name.size(); j++)
+		if (city2 == mycity.name[j])
+			break;
+	if (j == mycity.name.size()) {
+		cout << "该城市不在文件当中" << endl;
+		return;
 	}
-	int i = traffic_map[city1];
-	int j = traffic_map[city2];
+	i = traffic_map[city1];
+	j = traffic_map[city2];
 	for (auto n : edges[i][j]) {
 		if (n.type != "MAX" && n.type != "" && (start < n.time1 && n.time1 < end)) {
 			cout << "从" << city1 << "出发, 到" << city2

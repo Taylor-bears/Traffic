@@ -8,6 +8,76 @@
 
 using namespace std;
 
+struct city_pre {
+	double latitude;
+	double longitude;
+};
+
+double haversine(double lat1, double lon1, double lat2, double lon2) {
+	const double R = 6371.0; // 地球半径，单位为公里
+	double dlat = M_PI / 180.0 * (lat2 - lat1);
+	double dlon = M_PI / 180.0 * (lon2 - lon1);
+	double a = sin(dlat / 2) * sin(dlat / 2) + cos(M_PI / 180.0 * lat1) * cos(M_PI / 180.0 * lat2) * sin(dlon / 2) * sin(dlon / 2);
+	double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+	double distance = R * c;
+	return distance;
+}
+
+void build_city() {
+	std::ofstream outfile("city.txt", std::ofstream::trunc); // 打开文件并清空内容
+
+	if (!outfile.is_open()) {
+		std::cerr << "Error opening file." << std::endl;
+		return;
+	}
+
+	std::ifstream infile("city_pre.txt");
+
+	if (!infile.is_open()) {
+		std::cerr << "Error opening file." << std::endl;
+		return;
+	}
+
+	std::map<std::string, city_pre> cities;
+
+	std::string line;
+	while (std::getline(infile, line)) {
+		std::istringstream iss(line);
+		std::string city_name;
+		double latitude, longitude;
+		iss >> city_name >> latitude >> longitude;
+		cities[city_name] = { latitude, longitude };
+	}
+
+	std::map<std::pair<std::string, std::string>, double> distances;
+
+	for (const auto& city1 : cities) {
+		for (const auto& city2 : cities) {
+			if (city1.first != city2.first) {
+				double lat1 = city1.second.latitude;
+				double lon1 = city1.second.longitude;
+				double lat2 = city2.second.latitude;
+				double lon2 = city2.second.longitude;
+				double distance = haversine(lat1, lon1, lat2, lon2);
+				distances[{city1.first, city2.first}] = distance;
+			}
+		}
+	}
+
+	// 打印结果并将结果存储到文件
+	for (const auto& entry : distances) {
+		const std::string& city1 = entry.first.first;
+		const std::string& city2 = entry.first.second;
+		int distance = static_cast<int>(entry.second);
+		outfile << "(" << city1 << "," << city2 << ")" << distance << "km" << std::endl;
+	}
+
+	infile.close();
+	outfile.close();
+
+	return;
+}
+
 
 //路径查询函数接入
 void graph_find() {
@@ -198,8 +268,18 @@ void txt_find(){
 		cin >> flag;
 		switch(flag){
 		case 1:
-			mygraph.find_city();
-			break;
+			cout << "输入1，查询单个城市的信息；输入2，查询两个城市间的距离" << endl;
+			int flag_2;
+			cin >> flag_2;
+			while (flag_2 != 2 && flag_2 != 1) {
+				cout << "输入的数字无效，请重新输入" << endl;
+				cin >> flag_2;
+			}
+			if(flag_2==1)
+				mygraph.find_city();
+			else if (flag_2 == 2)
+				mygraph.find_vehicle_limit();
+				break;
 		case 2:
 			cout << "是否需要时间范围限制，是输入1，否输入2" << endl;
 			int flag_1;
@@ -221,4 +301,9 @@ void txt_find(){
 		}
 	} while (flag!=2);
 	return;
+}
+
+int main() {
+	build_city();
+	return 0;
 }
