@@ -7,6 +7,13 @@
 #include<vector>
 #include<unordered_map>
 #include<utility>
+#include<algorithm>
+#include<cmath>
+#include <map>
+#include<fstream>
+#include<sstream>
+
+#define M_PI 3.14159265358979323846
 
 using namespace std;
 
@@ -34,13 +41,17 @@ class city {
 public://测试用public
 	vector<string> name; //一维向量存储城市的名称
     //因为无序表中的部分对象类型没有pair类型，所以要重新定义哈希函数和相等比较函数
-    unordered_map<pair<string, string>, int, pair_hash, pair_equal> distance_map;//不同城市之间距离的哈希函数
+    unordered_map<pair<string, string>, int, pair_hash, pair_equal> distance_map;//不同城市之间直线距离的哈希函数
+    //连通距离
+    unordered_map<pair<string, string>, int, pair_hash, pair_equal> link_map;//不同城市之间连通距离的哈希函数
     vector<vector<int>> dist;
 
-	city(const string& file_path); //以文件作为输入参数（即需要用到city.txt）
+	city(const string& file_path, const string& file_path2); //以文件作为输入参数（即需要用到city.txt）
     city();
     //还需要添加、修改、删除函数
 };
+
+
 
 
 
