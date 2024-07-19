@@ -1,0 +1,3 @@
+Guilin 24.25 109.6
+Nanning 22.8 108.31
+Liuzhou 23.9 108.53

@@ -24,7 +24,7 @@ double haversine(double lat1, double lon1, double lat2, double lon2) {
 }
 
 void build_city() {
-	std::ofstream outfile("city.txt", std::ofstream::trunc); // 打开文件并清空内容
+	ofstream outfile("city.txt", ofstream::trunc); // 打开文件并清空内容
 
 	if (!outfile.is_open()) {
 		std::cerr << "Error opening file." << std::endl;
@@ -38,7 +38,7 @@ void build_city() {
 		return;
 	}
 
-	std::map<std::string, city_pre> cities;
+	map<string, city_pre> cities;
 
 	std::string line;
 	while (std::getline(infile, line)) {
@@ -49,7 +49,7 @@ void build_city() {
 		cities[city_name] = { latitude, longitude };
 	}
 
-	std::map<std::pair<std::string, std::string>, double> distances;
+	map<pair<string, string>, double> distances;
 
 	for (const auto& city1 : cities) {
 		for (const auto& city2 : cities) {
@@ -66,10 +66,11 @@ void build_city() {
 
 	// 打印结果并将结果存储到文件
 	for (const auto& entry : distances) {
-		const std::string& city1 = entry.first.first;
-		const std::string& city2 = entry.first.second;
+		const string& city1 = entry.first.first;
+		const string& city2 = entry.first.second;
 		int distance = static_cast<int>(entry.second);
-		outfile << "(" << city1 << "," << city2 << ")" << distance << "km" << std::endl;
+		outfile << "(" << city1 << "," << city2 << ")" 
+			<< distance << "km" << std::endl;
 	}
 
 	infile.close();
@@ -78,10 +79,41 @@ void build_city() {
 	return;
 }
 
+void writetext1() {
+	std::string filename;
+	std::cout << "请输入另一个文件的文件名：";
+	std::cin >> filename;
+
+	std::ifstream ifs(filename); // 打开用户输入的文件以供读取
+	std::ofstream ofs("city.txt", std::ios::app); // 打开 city.txt 文件以供追加写入
+
+	if (!ifs.is_open()) {
+		std::cerr << "输入的文件无法打开" << std::endl;
+		return;
+	}
+
+	if (!ofs.is_open()) {
+		std::cerr << "写入的文件无法打开" << std::endl;
+		return;
+	}
+
+	string line;
+	// 逐行读取用户输入的文件的内容
+	while (getline(ifs, line)) { 
+		// 将读取的内容逐行写入到 city.txt 文件中
+		ofs << line << endl;
+	}
+
+	std::cout << "内容已成功写入 city.txt" << std::endl;
+
+	ifs.close();
+	ofs.close();
+}
+
 
 //路径查询函数接入
 void graph_find() {
-	graph mygraph("city.txt", "vehicle.txt");
+	graph mygraph("city.txt", "city_link.txt", "vehicle.txt");
 	cout << "已更新city.txt与vehicle.txt文件，正在更新交通图……" << endl;
 	int flag;
 
@@ -90,6 +122,10 @@ void graph_find() {
 	do {
 		cout << "输入1查询最快的路径，输入2查询费用最少的路径，输入3退出" << endl;
 		cin >> flag;
+		while (flag != 2 && flag != 1 && flag != 3) {
+			cout << "输入的数字无效，请重新输入" << endl;
+			cin >> flag;
+		}
 		string city1, city2;
 		int day, hour, minute;
 		if (flag == 1 || flag == 2) {
@@ -122,9 +158,11 @@ void graph_find() {
 						cout << "输入的交通工具类型不正确，请重新输入。" << endl;
 						cin >> transport_type;
 					}
+					mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 					mygraph.optimal(city1, city2, transport_type, day, hour, minute);
 					break;
 				case 2:
+					mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 					mygraph.optimal_notype(city1, city2, day, hour, minute);
 					break;
 				case 3:
@@ -134,6 +172,7 @@ void graph_find() {
 						cout << "输入的交通工具类型不正确，请重新输入。" << endl;
 						cin >> transport_type;
 					}
+					mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 					mygraph.optimal_DFS(city1, city2, transport_type, day, hour, minute);
 					break;
 				case 4:
@@ -169,6 +208,7 @@ void graph_find() {
 							cout << "输入的交通工具类型不正确，请重新输入。" << endl;
 							cin >> transport_type;
 						}
+						mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 						mygraph.optimal_money(city1, city2, transport_type, day, hour, minute);
 					}
 					if (flag_2_1 == 1) {
@@ -181,6 +221,7 @@ void graph_find() {
 							cout << "输入的交通工具类型不正确，请重新输入。" << endl;
 							cin >> transport_type;
 						}
+						mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 						mygraph.optimal_money_limit(city1, city2, day, hour, minute, transport_type, extra_day);
 					}
 					break;
@@ -193,12 +234,14 @@ void graph_find() {
 						cin >> flag_2_2;
 					}
 					if (flag_2_2 == 2) {
+						mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 						mygraph.optimal_money_notype(city1, city2, day, hour, minute);
 					}
 					if (flag_2_2 == 1) {
 						cout << "请输入出发时间上限，输入1，则出发时间将会在预设时间的1天内筛选" << endl;
 						int extra_day;
 						cin >> extra_day;
+						mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 						mygraph.optimal_money_notype_limit(city1, city2, day, hour, minute, extra_day);
 					}
 					break;
@@ -217,6 +260,7 @@ void graph_find() {
 							cout << "输入的交通工具类型不正确，请重新输入。" << endl;
 							cin >> transport_type;
 						}
+						mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 						mygraph.optimal_DFS_money(city1, city2, transport_type, day, hour, minute);
 					}
 					if (flag_2_3 == 1) {
@@ -229,6 +273,7 @@ void graph_find() {
 							cout << "输入的交通工具类型不正确，请重新输入。" << endl;
 							cin >> transport_type;
 						}
+						mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 						mygraph.optimal_DFS_money_limit(city1, city2, day, hour, minute, transport_type, extra_day);
 					}
 					break;
@@ -255,10 +300,9 @@ void graph_find() {
 
 //信息查询函数接入
 void txt_find(){
-	graph mygraph("city.txt", "vehicle.txt");
+	graph mygraph("city.txt", "city_link.txt", "vehicle.txt");
 	cout << "已更新city.txt与vehicle.txt文件，正在更新交通图……" << endl;
 	int flag;
-
 	cout << "欢迎使用信息查询系统" << endl;
 	do {
 		cout << "请输入数字查询相应的文件" << endl;
@@ -266,6 +310,11 @@ void txt_find(){
 			"输入2：查询交通信息" << endl <<
 			"输入3：退出信息查询系统" << endl;
 		cin >> flag;
+		while (flag != 2 && flag != 1 && flag != 3) {
+			cout << "输入的数字无效，请重新输入" << endl;
+			cin >> flag;
+		}
+
 		switch(flag){
 		case 1:
 			cout << "输入1，查询单个城市的信息；输入2，查询两个城市间的距离" << endl;
@@ -275,11 +324,15 @@ void txt_find(){
 				cout << "输入的数字无效，请重新输入" << endl;
 				cin >> flag_2;
 			}
-			if(flag_2==1)
+			if (flag_2 == 1) {
+				mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 				mygraph.find_city();
-			else if (flag_2 == 2)
-				mygraph.find_vehicle_limit();
-				break;
+			}
+			else if (flag_2 == 2) {
+				mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
+				mygraph.find_twocity();
+			}
+			break;
 		case 2:
 			cout << "是否需要时间范围限制，是输入1，否输入2" << endl;
 			int flag_1;
@@ -288,10 +341,14 @@ void txt_find(){
 				cout << "输入的数字无效，请重新输入" << endl;
 				cin >> flag_1;
 			}
-			if(flag_1==2)
+			if (flag_1 == 2) {
+				mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 				mygraph.find_vehicle();
-			else if(flag_1 == 1)
+			}
+			else if (flag_1 == 1) {
+				mygraph.update("city.txt", "city_link.txt", "vehicle.txt");
 				mygraph.find_vehicle_limit();
+			}
 			break;
 		case 3:
 			cout << "正在退出信息查询系统" << endl;
@@ -299,11 +356,12 @@ void txt_find(){
 		default:
 			cout << "输入的数字无效，请重新输入" << endl;
 		}
-	} while (flag!=2);
+	} while (flag!=3);
 	return;
 }
 
 int main() {
 	build_city();
+	graph_find();
 	return 0;
 }

@@ -1,0 +1,5 @@
+(Beijing,Shanghai),train,G152,6.15:20,4:24,6.19:44,504
+(Beijing,Shanghai),train,G153,6.15:20,4:24,6.19:44,504
+(Beijing,Shanghai),train,G154,6.15:20,4:24,6.19:44,504
+(Beijing,Shanghai),train,G155,6.15:20,4:24,6.19:44,504
+(Beijing,Shanghai),train,G156,6.15:20,4:24,6.19:44,504

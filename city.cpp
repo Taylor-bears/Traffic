@@ -71,10 +71,10 @@ city::city(const string& file_path, const string& file_path2) {
             string city_name1;
             string city_name2;
 
-            while (input >> nosense) {
+            while (input2 >> nosense) {
                 if (nosense == '(') {
-                    getline(input, city_name1, ',');//读取 Beijing               
-                    getline(input, city_name2, ')');//读取 Wuhan                 
+                    getline(input2, city_name1, ',');//读取 Beijing               
+                    getline(input2, city_name2, ')');//读取 Wuhan                 
 
                     //读取两座城市的信息
                     int i;
@@ -98,8 +98,8 @@ city::city(const string& file_path, const string& file_path2) {
                     //读取城市距离信息
                     string distance;
                     int distance_num;
-                    getline(input, distance, 'k');//100km只读到k
-                    input >> nosense; //将m读入，下次就读入(
+                    getline(input2, distance, 'k');//100km只读到k
+                    input2 >> nosense; //将m读入，下次就读入(
                     distance_num = stoi(distance);
 
                     //将城市与城市组合，并与距离构成哈希表

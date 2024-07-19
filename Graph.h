@@ -38,7 +38,8 @@ public:
 	int number;//城市数量
 	vector<vector<vector<vehicle>>> edges;
 
-	graph(const string& file_path1, const string& file_path2);
+	graph(const string& file_path1, const string& file_path2, const string& file_path3);
+	void update(const string& file_path1, const string& file_path2, const string& file_path3);
 	graph();//默认构造
 	double time_transfer(int hour, int minute);//时间转换函数的申明
 
